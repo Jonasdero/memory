@@ -1,0 +1,23 @@
+{
+  "name": "memory",
+  "version": "1.0.0",
+  "description": "Memory with NodeJS and JQuery",
+  "main": "index.js",
+  "dependencies": {
+    "express": "^4.16.3"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Jonasdero/memory.git"
+  },
+  "author": "Jonasdero",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Jonasdero/memory/issues"
+  },
+  "homepage": "https://github.com/Jonasdero/memory#readme"
+}
