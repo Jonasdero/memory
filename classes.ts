@@ -1,6 +1,6 @@
 export class Game {
     name: string;
-    size: { width: number, height: number };
+    size: { width: number, height: number } = { width: 0, height: 0 };
     pictureUrls: string[] = [];
     cardOrder: number[] = [];
     playerData: PlayerData[] = [];
@@ -11,10 +11,11 @@ export class Game {
     currentPlayer: number;
     turnedCards: number[] = [];
     turnedIndexes: number[] = [];
+    sessions:number[]=[];
     // Picture
     constructor(size) {
-        this.size.width = size.width;
-        this.size.height = size.height;
+        this.size.width = +size.width;
+        this.size.height = +size.height;
         this.turn = 0;
         this.currentPlayer = -1;
         this.won = -1;
@@ -24,7 +25,7 @@ export class Game {
             this.field.push(0);
             if (i % 2 != 0) a++;
         }
-    }  
+    }
 
     getPlayers(): string[] {
         let players = [];
@@ -80,7 +81,7 @@ export class Game {
     }
 
     addPictures(count: number, pictures: string[]) {
-        this.pictureUrls.push('./memory.txt')
+        this.pictureUrls.push('/memory.txt')
         let taken = [];
         while (count > 0) {
             var index = Math.floor(Math.random() * (pictures.length - 1));

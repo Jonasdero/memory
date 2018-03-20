@@ -1,10 +1,10 @@
 "use strict";
-var _this = this;
 exports.__esModule = true;
 var express = require("express");
 var bodyParser = require("body-parser");
 var classes = require("./classes");
 var fs = require("fs");
+var path = require("path");
 var PORT = 4200;
 var app = express();
 app.use(bodyParser.json());
@@ -13,20 +13,18 @@ var playerSessionIDs = [];
 var allPictureURLS = [];
 var games = [];
 var createSessionID = function () {
-    var sessionID = this.playerSessionIDs[this.playerSessionIDs.length - 1] + 1;
-    this.playerSessionIDs.push(sessionID);
+    var sessionID = 0;
+    if (playerSessionIDs.length != 0)
+        sessionID = playerSessionIDs[playerSessionIDs.length - 1] + 1;
+    playerSessionIDs.push(sessionID);
     return sessionID;
 };
 var findgame = function (sessionID) {
     for (var _i = 0, games_1 = games; _i < games_1.length; _i++) {
         var game = games_1[_i];
-        for (var _a = 0, _b = game.playerData; _a < _b.length; _a++) {
-            var data = _b[_a];
-            if (sessionID === data.id)
-                return game;
-        }
+        if (game.sessions.indexOf(sessionID) !== -1)
+            return game;
     }
-    return null;
 };
 var getSessionID = function (playerName) {
     for (var _i = 0, games_2 = games; _i < games_2.length; _i++) {
@@ -39,55 +37,54 @@ var getSessionID = function (playerName) {
     }
     return -1;
 };
-var path = './pictures';
-fs.readdir(path, function (err, items) {
+var picturePath = './pictures';
+fs.readdir(picturePath, function (err, items) {
     for (var i = 0; i < items.length; i++) {
         if (items[i] != 'memory.jpg')
             allPictureURLS.push('/' + items[i]);
     }
-    console.log(allPictureURLS);
+    // console.log(allPictureURLS);
 });
 // GET -> /
 // Get HTML site
 app.get('/', function (req, res) {
-    // res.sendFile('a html');
-    res.send('HI');
+    res.sendFile(path.join(__dirname + '/index.html'));
 });
 // POST -> /connect
 // Post sessionName, size and playerName to Server
 // returns sessionID
 app.post('/connect', function (req, res) {
-    console.log('connect/' + req.body);
-    var data = JSON.parse(req.body);
-    var sessionName = data.sessionName;
-    for (var _i = 0, _a = _this.games; _i < _a.length; _i++) {
-        var game_1 = _a[_i];
-        if (game_1.sessionName === sessionName) {
+    console.log('POST -> connect/');
+    var data = req.body;
+    for (var _i = 0, games_3 = games; _i < games_3.length; _i++) {
+        var game_1 = games_3[_i];
+        if (game_1.name === data.sessionName) {
             var sessionID_1 = createSessionID();
             game_1.playerData.push(new classes.PlayerData(sessionID_1, data.playerName));
             res.json(sessionID_1);
             return;
         }
     }
-    var size = data.size;
     var game = new classes.Game(data.size);
     game.name = data.sessionName;
     var sessionID = createSessionID();
     game.playerData.push(new classes.PlayerData(sessionID, data.playerName));
+    game.addPictures((game.size.height * game.size.width) / 2, allPictureURLS);
+    game.sessions.push(sessionID);
     games.push(game);
     res.json({ sessionID: sessionID });
 });
 // gets game from current sessionID
 app.param('id', function (req, res, next, val) {
-    req.game = findgame(val);
-    req.session = val;
+    req.game = findgame(+val);
+    req.session = +val;
     next();
 });
 // GET -> /connected
 // Gets connected players from current session
 // returns string array with player names
 app.get('/connected/:id', function (req, res, next) {
-    console.log('connected/' + req.session);
+    console.log('GET -> connected/' + req.session);
     var game = req.game;
     next();
     res.json({ connectedPlayers: game.getPlayers() });
@@ -96,7 +93,7 @@ app.get('/connected/:id', function (req, res, next) {
 // Initialises the game
 // returns pictureUrls, connectedPlayers, field
 app.get('/init/:id', function (req, res, next) {
-    console.log('init/' + req.session);
+    console.log('GET -> init/' + req.session);
     var game = req.game;
     game.currentPlayer = game.playerData[0].id;
     res.json({ pictureUrls: game.pictureUrls, connectedPlayers: game.getPlayers(), field: game.field });
@@ -106,7 +103,7 @@ app.get('/init/:id', function (req, res, next) {
 // Get current game status
 // returns points, field, turn, won
 app.get('/game/:id', function (req, res, next) {
-    console.log('game/' + req.session);
+    console.log('GET -> game/' + req.session);
     var game = req.game;
     res.json({ points: game.getPlayerPoints(), field: game.field, currentPlayer: game.currentPlayer, won: game.won });
     next();
@@ -116,7 +113,8 @@ app.get('/game/:id', function (req, res, next) {
 // returns points, field, turn, won
 app.post('/turn/:id', function (req, res, next) {
     var index = JSON.parse(req.body).index;
-    console.log('turn/' + req.session + '/' + index);
+    console.log('POST -> turn/' + req.session + '/' + index);
+    console.log(req.body);
     var game = req.game;
     game.makeTurn(req.session, index);
     res.json({ points: game.getPlayerPoints(), field: game.field, currentPlayer: game.currentPlayer, won: game.won });

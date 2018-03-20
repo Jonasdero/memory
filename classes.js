@@ -3,14 +3,16 @@ exports.__esModule = true;
 var Game = /** @class */ (function () {
     // Picture
     function Game(size) {
+        this.size = { width: 0, height: 0 };
         this.pictureUrls = [];
         this.cardOrder = [];
         this.playerData = [];
         this.field = [];
         this.turnedCards = [];
         this.turnedIndexes = [];
-        this.size.width = size.width;
-        this.size.height = size.height;
+        this.sessions = [];
+        this.size.width = +size.width;
+        this.size.height = +size.height;
         this.turn = 0;
         this.currentPlayer = -1;
         this.won = -1;
@@ -22,9 +24,6 @@ var Game = /** @class */ (function () {
                 a++;
         }
     }
-    Game.prototype.addPictures = function () {
-        this.pictureUrls.push('./memory.txt');
-    };
     Game.prototype.getPlayers = function () {
         var players = [];
         for (var _i = 0, _a = this.playerData; _i < _a.length; _i++) {
@@ -79,6 +78,18 @@ var Game = /** @class */ (function () {
                 this.currentPlayer = -1;
                 this.waitAndTurnCards();
             }
+        }
+    };
+    Game.prototype.addPictures = function (count, pictures) {
+        this.pictureUrls.push('/memory.txt');
+        var taken = [];
+        while (count > 0) {
+            var index = Math.floor(Math.random() * (pictures.length - 1));
+            if (taken.indexOf(index) != -1)
+                continue;
+            taken.push(index);
+            this.pictureUrls.push(pictures[index]);
+            count--;
         }
     };
     return Game;
