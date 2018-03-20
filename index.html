@@ -1,0 +1,143 @@
+<html DOCTYPE HTML5>
+
+<head>
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap-theme.min.css">
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+
+        <script>
+                var sessionID;
+                var refreshintervall;
+                var pictureUrls;
+
+                function start(player, points) {
+                        node = document.getElementById("table");
+                        node.appendChild(createTable(player, points));
+                }
+
+                function createTable(player, points) {
+                        var myTable = document.createElement("table");
+                        var mytablehead = document.createElement("thead");
+                        currentRow = document.createElement("tr");
+                        currentCell = document.createElement("td");
+                        currentText = document.createTextNode("Players");
+                        currentCell.appendChild(currentText);
+                        currentRow.appendChild(currentCell);
+                        currentCell = document.createElement("td");
+                        currentText = document.createTextNode("Points");
+                        currentCell.appendChild(currentText);
+                        currentRow.appendChild(currentCell);
+                        mytablehead.appendChild(currentRow);
+                        var mytablebody = document.createElement("tbody");
+
+                        for (var i = 0; player.length > i; i++) {
+                                currentRow = document.createElement("tr");
+                                currentCell = document.createElement("td");
+                                currentText = document.createTextNode(i + 1 + ". " + player[i]);
+                                currentCell.appendChild(currentText);
+                                currentRow.appendChild(currentCell);
+                                currentCell = document.createElement("td");
+                                currentText = document.createTextNode(points[i]);
+                                currentCell.appendChild(currentText);
+                                currentRow.appendChild(currentCell);
+                                mytablebody.appendChild(currentRow);
+                        }
+                        myTable.appendChild(mytablehead);
+                        myTable.appendChild(mytablebody);
+                        myTable.setAttribute("class", "table");
+                        return myTable;
+                }
+
+                function players() {
+                        var players;
+                        var points;
+                        $.get("/connected/" + sessionID,
+                                function (result) {
+                                        players = JSON.parse(result).connectedPlayers;
+                                        Console.log(this.connectedPlayers);
+                                }
+                        );
+                        var points = new Array(players.length());
+                        for(i = 0; i < points.lenght; i++){
+                                points[i] = 0;
+                        }
+                        start(players,points);
+                }
+
+                $(document).ready(function () {
+                        $("#btn_login").click(function () {
+                                if ($("#SName").val() != "" && $("#Session").val() != "" && $("#inputGroupSelect01").val() != "") {
+                                        var name = $("#SName").val();
+                                        var session = $("#Session").val();
+                                        var width = $("#inputGroupSelect01").val().substring(0, 1);
+                                        var height = $("#inputGroupSelect01").val().substring(2, 3);
+
+                                        $("#login").hide();
+                                        $("#init").show();
+
+                                        $.post("/connect",
+                                                JSON.stringify({ sessionName: session, playerName: name, size: { width: width, height: height } }),
+                                                function (result) {
+                                                        this.sessionID = JSON.parse(result).sessionID;
+                                                        Console.log(this.sessionID);
+                                                        
+                                                        refreshintervall = setInterval(players(), 500);
+                                                }
+                                        );
+
+                                } else {
+                                        $("#warning").show();
+                                }
+                        });
+                        $("#btn_init").click(function () {
+                                clearInterval(refreshintervall);
+                                $.get("/init/" + sessionID,
+                                        function (result) {
+                                                players = JSON.parse(result).connectedPlayers;
+                                                Console.log(this.connectedPlayers);
+                                        }
+                                );
+
+                        });
+                });
+        </script>
+</head>
+
+<body>
+        <h1>Memory</h1>
+
+        <!-- Login Game -->
+        <div id="login">
+                <form>
+                        <div class="form-group">
+                                <label for="PName">Player Name</label>
+                                <input type="text" class="form-control" id="SName" placeholder="Enter Player Name">
+                        </div>
+                        <div class="form-group">
+                                <label for="Session">Session ID</label>
+                                <input type="text" class="form-control" id="Session" placeholder="Enter Session ID">
+                        </div>
+                        <div class="input-group mb-3">
+                                <select class="custom-select" id="inputGroupSelect01">
+                                        <option value="" selected>Gamesize</option>
+                                        <option value="4x4">4x4</option>
+                                        <option value="4x5">4x5</option>
+                                        <option value="6x6">6x6</option>
+                                </select>
+                        </div>
+                </form>
+                <div id="warning" hidden="true" class="bg-danger">Please fill in all fields!</div>
+                <button class="btn btn-primary" id="btn_login">Submit</button>
+        </div>
+
+        <!-- Init -->
+        <div id="init" hidden="true">
+                <div id="table"></div>
+                <p>Click ready to start the game</p>
+                <button class="btn btn-primary" id="btn_init">Ready</button>
+        </div>
+
+</body>
+
+</html>
