@@ -5,7 +5,7 @@ var bodyParser = require("body-parser");
 var classes = require("./classes");
 var fs = require("fs");
 var path = require("path");
-var PORT = 4200;
+var PORT = 4201;
 var app = express();
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -99,7 +99,7 @@ app.get('/connected/:id', function (req, res, next) {
 app.get('/init/:id', function (req, res, next) {
     console.log('GET -> init/' + req.session);
     var game = req.game;
-    game.currentPlayer = game.playerData[0].id;
+    game.currentPlayer = game.sessions[0];
     res.json({ pictureUrls: game.pictureUrls, connectedPlayers: game.getPlayers(), field: game.field });
     next();
 });

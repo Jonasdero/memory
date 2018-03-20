@@ -102,7 +102,7 @@ app.get('/connected/:id', (req: Request, res: Response, next) => {
 app.get('/init/:id', (req: Request, res: Response, next) => {
     console.log('GET -> init/' + req.session);
     let game: classes.Game = req.game;
-    game.currentPlayer = game.playerData[0].id;
+    game.currentPlayer = game.sessions[0];
     res.json({ pictureUrls: game.pictureUrls, connectedPlayers: game.getPlayers(), field: game.field });
     next();
 })

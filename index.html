@@ -14,7 +14,8 @@
                 var players;
                 var sessionID = -1;
                 var pictureUrls = [];
-                var interval =null;
+                var interval = null;
+                var currentPlayer;
                 function createTable(player, points) {
                         $("#playertable").remove();
                         var myTable = document.createElement("table");
@@ -50,45 +51,51 @@
                         return myTable;
                 }
 
-                function createGame() {
-                        $("#gametable").remove();
+                function build() {
+                        $.get("/game/" + sessionID, function (result) {
+                                field = result.field; points = result.points; currentPlayer = result.currentPlayer;
+                        })
+                        node = document.getElementById("game");
+                        if (document.getElementById("gametable") != null)
+                                $("#gametable").remove();
                         var myTable = document.createElement("table");
                         var mytablebody = document.createElement("tbody");
-
                         for (var i = 0; height > i; i++) {
                                 currentRow = document.createElement("tr");
                                 for (var j = 0; width > j; j++) {
                                         currentCell = document.createElement("td");
-                                        currentCell.addEventListener("click", function () {
-                                                $.get("/turn/" + sessionID, (i * 4) + j,
-                                                        function (result) { field = result.field; points = result.points; won = result.won; }
-                                                );
-                                        })
+                                        if (currentPlayer == SessionID) {
+                                                currentCell.addEventListener("click", function () {
+                                                        $.post("/turn/" + sessionID, { "index": (i * 4) + j },
+                                                                function (result) {
+                                                                        field = result.field; points = result.points; won = result.won;
+                                                                }
+
+                                                        );
+                                                })
+                                        }
                                         img = currentCell.createElement("img");
                                         img.setAttribute("src", pictureUrls[field[(i * 4) + j]]);
-                                        currentCell.appendChild(currentText);
+                                        img.setAttribute("height", "100");
+                                        img.setAttribute("width", "100");
+                                        currentCell.appendChild(img);
                                         currentRow.appendChild(currentCell);
                                 }
                                 mytablebody.appendChild(currentRow);
+
                         }
                         myTable.appendChild(mytablebody);
                         myTable.setAttribute("id", "gametable")
-                        return myTable;
-                }
-
-                function build() {
+                        node.appendChild(myTable);
                         if (won !== -1) {
                                 var index;
-                                for (var i = 1; i < points.lenght; i++) {
+                                for (var i = 1; i < points.length; i++) {
                                         index = 0;
-                                        if (point[i] > point[i - 1])
-                                                index = i;
+                                        if (point[i] > point[i - 1]) index = i;
                                 }
+                                clearInterval(interval);
                                 alert(player[index] + " hat gewonnen");
                         }
-
-                        node = document.getElementById("game");
-                        node.appendChild(createGame());
                 }
 
                 function getConnectedPlayers() {
@@ -128,7 +135,7 @@
                         $("#btn_init").click(function () {
                                 $("#init").hide();
                                 $("#game").show();
-                                interval =null;
+                                clearInterval(interval);
                                 $.get("/init/" + sessionID,
                                         function (result) {
                                                 players = result.connectedPlayers;
@@ -144,7 +151,7 @@
 
 <body>
         <h1>Memory</h1>
-
+        <h2>lörrenz</h2>
         <!-- Login Game -->
         <div id="login">
                 <form>
