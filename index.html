@@ -7,14 +7,9 @@
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
 
         <script>
-                var sessionID;
-                var refreshintervall;
-                var pictureUrls;
-
-                function start(player, points) {
-                        node = document.getElementById("table");
-                        node.appendChild(createTable(player, points));
-                }
+                var sessionID = 0;
+                var stopPlayers = false;
+                var pictureUrls = [];
 
                 function createTable(player, points) {
                         var myTable = document.createElement("table");
@@ -49,20 +44,22 @@
                         return myTable;
                 }
 
-                function players() {
-                        var players;
-                        var points;
-                        $.get("/connected/" + sessionID,
-                                function (result) {
-                                        players = JSON.parse(result).connectedPlayers;
-                                        Console.log(this.connectedPlayers);
-                                }
-                        );
-                        var points = new Array(players.length());
-                        for(i = 0; i < points.lenght; i++){
-                                points[i] = 0;
-                        }
-                        start(players,points);
+                function getConnectedPlayers() {
+                        setInterval(() => {
+                                var players;
+                                var points;
+                                $.get("/connected/" + sessionID,
+                                        function (result) {
+                                                players = result.connectedPlayers;
+                                                var points = []
+                                                for (i = 0; i < points.lenght; i++) { points.push(0); }
+                                                node = document.getElementById("table");
+                                                node.appendChild(createTable(players, points));
+                                                if (!stopPlayers) getConnectedPlayers();
+                                        }
+                                );
+
+                        }, 500);
                 }
 
                 $(document).ready(function () {
@@ -70,32 +67,26 @@
                                 if ($("#SName").val() != "" && $("#Session").val() != "" && $("#inputGroupSelect01").val() != "") {
                                         var name = $("#SName").val();
                                         var session = $("#Session").val();
-                                        var width = $("#inputGroupSelect01").val().substring(0, 1);
-                                        var height = $("#inputGroupSelect01").val().substring(2, 3);
+                                        var width = parseInt($("#inputGroupSelect01").val().split('x')[0]);
+                                        var height = parseInt($("#inputGroupSelect01").val().split('x')[1]);
 
                                         $("#login").hide();
                                         $("#init").show();
-
                                         $.post("/connect",
-                                                JSON.stringify({ sessionName: session, playerName: name, size: { width: width, height: height } }),
+                                                { "sessionName": session, "playerName": name, size: { "width": width, "height": height } },
                                                 function (result) {
-                                                        this.sessionID = JSON.parse(result).sessionID;
-                                                        Console.log(this.sessionID);
-                                                        
-                                                        refreshintervall = setInterval(players(), 500);
+                                                        this.sessionID = result.sessionID;
+                                                        players();
                                                 }
                                         );
 
-                                } else {
-                                        $("#warning").show();
-                                }
+                                } else { $("#warning").show(); }
                         });
                         $("#btn_init").click(function () {
-                                clearInterval(refreshintervall);
+                                stopPlayers = true;
                                 $.get("/init/" + sessionID,
                                         function (result) {
                                                 players = JSON.parse(result).connectedPlayers;
-                                                Console.log(this.connectedPlayers);
                                         }
                                 );
 
