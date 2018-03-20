@@ -13,15 +13,18 @@ var playerSessionIDs = [];
 var allPictureURLS = [];
 var games = [];
 var createSessionID = function () {
-    var sessionID = 0;
-    if (playerSessionIDs.length != 0)
-        sessionID = playerSessionIDs[playerSessionIDs.length - 1] + 1;
+    var sessionID = playerSessionIDs.length;
     playerSessionIDs.push(sessionID);
+    console.log(playerSessionIDs);
     return sessionID;
 };
 var findgame = function (sessionID) {
     for (var _i = 0, games_1 = games; _i < games_1.length; _i++) {
         var game = games_1[_i];
+        // console.log(game.sessions);
+        // console.log(sessionID);
+        // console.log(typeof(sessionID));
+        // console.log(typeof(game.sessions[0]));
         if (game.sessions.indexOf(sessionID) !== -1)
             return game;
     }
@@ -61,7 +64,8 @@ app.post('/connect', function (req, res) {
         if (game_1.name === data.sessionName) {
             var sessionID_1 = createSessionID();
             game_1.playerData.push(new classes.PlayerData(sessionID_1, data.playerName));
-            res.json(sessionID_1);
+            game_1.sessions.push(sessionID_1);
+            res.json({ sessionID: sessionID_1 });
             return;
         }
     }

@@ -12,10 +12,9 @@
                 var height;
                 var won;
                 var players;
-                var sessionID = 0;
-                var stopPlayers = false;
+                var sessionID = -1;
                 var pictureUrls = [];
-
+                var interval =null;
                 function createTable(player, points) {
                         $("#playertable").remove();
                         var myTable = document.createElement("table");
@@ -51,21 +50,6 @@
                         return myTable;
                 }
 
-                function build() {
-                        if (won !== -1) {
-                                clearInterval(refreshintervall);
-                                var index;
-                                for (var i = 1; i < points.lenght; i++) {
-                                        index = 0;
-                                        if (point[i] > point[i - 1])
-                                                index = i;
-                                }
-                                alert(player[index] + " hat gewonnen");
-                        }
-                        node = document.getElementById("game");
-                        node.appendChild(createGame());
-                }
-
                 function createGame() {
                         $("#gametable").remove();
                         var myTable = document.createElement("table");
@@ -89,23 +73,36 @@
                         }
                         myTable.appendChild(mytablebody);
                         myTable.setAttribute("id", "gametable")
-                        return myTable;}
-                function getConnectedPlayers() {
-                        setInterval(() => {
-                                var players;
-                                var points;
-                                $.get("/connected/" + sessionID,
-                                        function (result) {
-                                                players = result.connectedPlayers;
-                                                var points = []
-                                                for (i = 0; i < points.lenght; i++) { points.push(0); }
-                                                node = document.getElementById("table");
-                                                node.appendChild(createTable(players, points));
-                                                if (!stopPlayers) getConnectedPlayers();
-                                        }
-                                );
+                        return myTable;
+                }
 
-                        }, 500);
+                function build() {
+                        if (won !== -1) {
+                                var index;
+                                for (var i = 1; i < points.lenght; i++) {
+                                        index = 0;
+                                        if (point[i] > point[i - 1])
+                                                index = i;
+                                }
+                                alert(player[index] + " hat gewonnen");
+                        }
+
+                        node = document.getElementById("game");
+                        node.appendChild(createGame());
+                }
+
+                function getConnectedPlayers() {
+                        var players;
+                        var points;
+                        $.get("/connected/" + sessionID,
+                                function (result) {
+                                        players = result.connectedPlayers;
+                                        var points = []
+                                        for (i = 0; i < players.length; i++) { points.push(0); }
+                                        node = document.getElementById("table");
+                                        node.appendChild(createTable(players, points));
+                                }
+                        );
                 }
 
                 $(document).ready(function () {
@@ -121,8 +118,8 @@
                                         $.post("/connect",
                                                 { "sessionName": session, "playerName": name, size: { "width": width, "height": height } },
                                                 function (result) {
-                                                        this.sessionID = result.sessionID;
-                                                        getConnectedPlayers();
+                                                        sessionID = result.sessionID;
+                                                        interval = setInterval(getConnectedPlayers, 500);
                                                 }
                                         );
 
@@ -131,18 +128,15 @@
                         $("#btn_init").click(function () {
                                 $("#init").hide();
                                 $("#game").show();
-                                clearInterval(refreshintervall);
+                                interval =null;
                                 $.get("/init/" + sessionID,
                                         function (result) {
-                                                players = JSON.parse(result).connectedPlayers;
-                                                Console.log(this.connectedPlayers);
-                                                field = JSON.parse(result).field;
-                                                pictureUrls = JSON.parse(result).pictureUrls;
-                                                stopPlayers = true;
+                                                players = result.connectedPlayers;
+                                                field = result.field;
+                                                pictureUrls = result.pictureUrls;
+                                                interval = setInterval(build, 500);
                                         }
                                 );
-                                refreshintervall = setInterval(build(), 500);
-
                         });
                 });
         </script>
