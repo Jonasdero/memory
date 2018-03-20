@@ -10,6 +10,11 @@
                 var sessionID;
                 var refreshintervall;
                 var pictureUrls;
+                var field;
+                var width;
+                var height;
+                var won;
+                var players;
 
                 function start(player, points) {
                         node = document.getElementById("table");
@@ -59,10 +64,53 @@
                                 }
                         );
                         var points = new Array(players.length());
-                        for(i = 0; i < points.lenght; i++){
+                        for (i = 0; i < points.lenght; i++) {
                                 points[i] = 0;
                         }
-                        start(players,points);
+                        start(players, points);
+                }
+
+                function build() {
+                        if(won){
+                                clearInterval(refreshintervall);
+                                var index
+                                for(var i = 1; i < points.lenght; i++){
+                                        index = 0;
+                                        if(point[i] > point[i-1])
+                                        index = i;
+                                }
+                                alert(player[index] + " hat gewonnen");
+                        }
+                        node = document.getElementById("game");
+                        node.appendChild(createGame());
+                }
+
+                function createGame() {
+                        var myTable = document.createElement("table");
+                        var mytablebody = document.createElement("tbody");
+
+                        for (var i = 0; height > i; i++) {
+                                currentRow = document.createElement("tr");
+                                for (var j = 0; width > j; j++) {
+                                        currentCell = document.createElement("td");
+                                        currentCell.addEventListener("click", function () {
+                                                $.get("/turn/" + sessionID, (i*4)+j,
+                                                        function (result) {
+                                                                field = JSON.parse(result).field;
+                                                                points = JSON.parse(result).points;
+                                                                won = JSON.parse(result).won;
+                                                        }
+                                                );
+                                        })
+                                        img = currentCell.createElement("img");
+                                        img.setAttribute("src", pictureUrls[i,j]);
+                                        currentCell.appendChild(currentText);
+                                        currentRow.appendChild(currentCell);
+                                }
+                                mytablebody.appendChild(currentRow);
+                        }
+                        myTable.appendChild(mytablebody);
+                        return myTable;
                 }
 
                 $(document).ready(function () {
@@ -70,8 +118,8 @@
                                 if ($("#SName").val() != "" && $("#Session").val() != "" && $("#inputGroupSelect01").val() != "") {
                                         var name = $("#SName").val();
                                         var session = $("#Session").val();
-                                        var width = $("#inputGroupSelect01").val().substring(0, 1);
-                                        var height = $("#inputGroupSelect01").val().substring(2, 3);
+                                        width = $("#inputGroupSelect01").val().substring(0, 1);
+                                        height = $("#inputGroupSelect01").val().substring(2, 3);
 
                                         $("#login").hide();
                                         $("#init").show();
@@ -81,7 +129,7 @@
                                                 function (result) {
                                                         this.sessionID = JSON.parse(result).sessionID;
                                                         Console.log(this.sessionID);
-                                                        
+
                                                         refreshintervall = setInterval(players(), 500);
                                                 }
                                         );
@@ -91,13 +139,18 @@
                                 }
                         });
                         $("#btn_init").click(function () {
+                                $("#init").hide();
+                                $("#game").show();
                                 clearInterval(refreshintervall);
                                 $.get("/init/" + sessionID,
                                         function (result) {
                                                 players = JSON.parse(result).connectedPlayers;
                                                 Console.log(this.connectedPlayers);
+                                                field = JSON.parse(result).field;
+                                                pictureUrls = JSON.parse(result).pictureUrls;
                                         }
                                 );
+                                refreshintervall = setInterval(build(), 500);
 
                         });
                 });
@@ -137,6 +190,9 @@
                 <p>Click ready to start the game</p>
                 <button class="btn btn-primary" id="btn_init">Ready</button>
         </div>
+
+        <!-- Game -->
+        <div id="game" hidden="true"></div>
 
 </body>
 
