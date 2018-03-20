@@ -11,6 +11,7 @@ var Game = /** @class */ (function () {
         this.turnedCards = [];
         this.turnedIndexes = [];
         this.sessions = [];
+        this.foundPairs = [];
         this.size.width = +size.width;
         this.size.height = +size.height;
         this.turn = 0;
@@ -65,10 +66,12 @@ var Game = /** @class */ (function () {
         this.turnedIndexes.push(index);
         if (this.turn === 2) {
             if (this.turnedCards[0] === this.turnedCards[1]) {
-                // this.foundPairs.push(this.turnedCards[0]);
+                this.foundPairs.push(this.turnedCards[0]);
                 this.turnedCards = [];
                 this.turnedIndexes = [];
                 this.playerData[this.getPlayerIndex(sessionID)].points++;
+                if (this.foundPairs.length == (this.size.height * this.size.width) / 2)
+                    this.won = 1;
             }
             else {
                 var index_1 = this.getPlayerIndex(this.currentPlayer) + 1;
