@@ -11,7 +11,8 @@ export class Game {
     currentPlayer: number;
     turnedCards: number[] = [];
     turnedIndexes: number[] = [];
-    sessions:number[]=[];
+    sessions: number[] = [];
+    foundPairs: number[] = [];
     // Picture
     constructor(size) {
         this.size.width = +size.width;
@@ -51,9 +52,8 @@ export class Game {
         setInterval(() => {
             this.currentPlayer = this.nextPlayer;
             this.turn = 0;
-            for (let index of this.turnedIndexes) {
+            for (let index of this.turnedIndexes)
                 this.field[index] = 0;
-            }
             this.turnedIndexes = [];
             this.turnedCards = [];
         }, 2500)
@@ -66,10 +66,11 @@ export class Game {
 
         if (this.turn === 2) {
             if (this.turnedCards[0] === this.turnedCards[1]) {
-                // this.foundPairs.push(this.turnedCards[0]);
+                this.foundPairs.push(this.turnedCards[0]);
                 this.turnedCards = [];
                 this.turnedIndexes = [];
                 this.playerData[this.getPlayerIndex(sessionID)].points++;
+                if (this.foundPairs.length == (this.size.height * this.size.width) / 2) this.won = 1;
             } else {
                 let index = this.getPlayerIndex(this.currentPlayer) + 1;
                 if (index = this.playerData.length) index = 0;

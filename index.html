@@ -50,13 +50,13 @@
                 }
 
                 function build() {
-                        if(won){
+                        if (won !== -1) {
                                 clearInterval(refreshintervall);
-                                var index
-                                for(var i = 1; i < points.lenght; i++){
+                                var index;
+                                for (var i = 1; i < points.lenght; i++) {
                                         index = 0;
-                                        if(point[i] > point[i-1])
-                                        index = i;
+                                        if (point[i] > point[i - 1])
+                                                index = i;
                                 }
                                 alert(player[index] + " hat gewonnen");
                         }
@@ -73,23 +73,20 @@
                                 for (var j = 0; width > j; j++) {
                                         currentCell = document.createElement("td");
                                         currentCell.addEventListener("click", function () {
-                                                $.get("/turn/" + sessionID, (i*4)+j,
-                                                        function (result) {
-                                                                field = JSON.parse(result).field;
-                                                                points = JSON.parse(result).points;
-                                                                won = JSON.parse(result).won;
-                                                        }
+                                                $.get("/turn/" + sessionID, (i * 4) + j,
+                                                        function (result) { field = result.field; points = result.points; won = result.won; }
                                                 );
                                         })
                                         img = currentCell.createElement("img");
-                                        img.setAttribute("src", pictureUrls[i,j]);
+                                        img.setAttribute("src", pictureUrls[field[(i * 4) + j]]);
                                         currentCell.appendChild(currentText);
                                         currentRow.appendChild(currentCell);
                                 }
                                 mytablebody.appendChild(currentRow);
                         }
                         myTable.appendChild(mytablebody);
-                        return myTable;}
+                        return myTable;
+                }
                 function getConnectedPlayers() {
                         setInterval(() => {
                                 var players;
@@ -138,7 +135,7 @@
                                                 Console.log(this.connectedPlayers);
                                                 field = JSON.parse(result).field;
                                                 pictureUrls = JSON.parse(result).pictureUrls;
-                                stopPlayers = true;
+                                                stopPlayers = true;
                                         }
                                 );
                                 refreshintervall = setInterval(build(), 500);
