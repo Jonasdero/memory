@@ -17,6 +17,7 @@
                 var pictureUrls = [];
 
                 function createTable(player, points) {
+                        $("#playertable").remove();
                         var myTable = document.createElement("table");
                         var mytablehead = document.createElement("thead");
                         currentRow = document.createElement("tr");
@@ -46,6 +47,7 @@
                         myTable.appendChild(mytablehead);
                         myTable.appendChild(mytablebody);
                         myTable.setAttribute("class", "table");
+                        myTable.setAttribute("id", "playertable")
                         return myTable;
                 }
 
@@ -65,6 +67,7 @@
                 }
 
                 function createGame() {
+                        $("#gametable").remove();
                         var myTable = document.createElement("table");
                         var mytablebody = document.createElement("tbody");
 
@@ -89,6 +92,7 @@
                                 mytablebody.appendChild(currentRow);
                         }
                         myTable.appendChild(mytablebody);
+                        myTable.setAttribute("id", "gametable")
                         return myTable;}
                 function getConnectedPlayers() {
                         setInterval(() => {
