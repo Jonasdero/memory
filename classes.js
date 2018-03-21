@@ -58,7 +58,7 @@ var Game = (function () {
             if (data.id === sessionID)
                 return data.name;
         }
-        return "FELIXXX";
+        return "Waiting";
     };
     Game.prototype.waitAndTurnCards = function () {
         var _this = this;
@@ -70,13 +70,15 @@ var Game = (function () {
             }
             _this.turnedIndexes = [];
             _this.turnedCards = [];
-        }, 1500);
+        }, 500);
     };
     Game.prototype.makeTurn = function (sessionID, index) {
         this.turn++;
         this.turnedCards.push(this.cardOrder[index]);
         this.turnedIndexes.push(index);
         this.field[index] = this.cardOrder[index];
+        console.log(this.field);
+        console.log(this.turnedCards);
         if (this.turn === 2) {
             this.turn = 0;
             if (this.turnedCards[0] === this.turnedCards[1]) {

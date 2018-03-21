@@ -57,7 +57,7 @@ export class Game {
     getPlayerName(sessionID: number): string {
         for (let data of this.playerData)
             if (data.id === sessionID) return data.name;
-        return "FELIXXX";
+        return "Waiting";
     }
     waitAndTurnCards() {
         setTimeout(() => {
@@ -66,7 +66,7 @@ export class Game {
                 this.field[index] = 0;
             this.turnedIndexes = [];
             this.turnedCards = [];
-        }, 1500)
+        }, 500)
     }
 
     makeTurn(sessionID: number, index: number) {
@@ -74,6 +74,8 @@ export class Game {
         this.turnedCards.push(this.cardOrder[index]);
         this.turnedIndexes.push(index);
         this.field[index] = this.cardOrder[index];
+        console.log(this.field);
+        console.log(this.turnedCards);
         if (this.turn === 2) {
             this.turn = 0;
             if (this.turnedCards[0] === this.turnedCards[1]) {
@@ -87,11 +89,11 @@ export class Game {
                 if (this.currentIndex == this.sessions.length) this.currentIndex = 0;
                 this.nextPlayer = this.sessions[this.currentIndex];
                 this.currentPlayer = -1;
+
                 this.waitAndTurnCards();
             }
         }
     }
-
 
     addPictures(count: number, pictures: string[]) {
         this.pictureUrls.push('/memory.jpg')

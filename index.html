@@ -18,8 +18,9 @@
                 var currentPlayer = -1;
                 var playingPlayer = "";
                 var points = [];
-
-                function createTable(player, points) {
+                var oldfield = [];
+                var clicked = false;
+                function createTable() {
                         if (document.getElementById("playertable") !== null)
                                 $("#playertable").remove();
                         var myTable = document.createElement("table");
@@ -36,14 +37,15 @@
                         mytablehead.appendChild(currentRow);
                         var mytablebody = document.createElement("tbody");
 
-                        for (var i = 0; player.length > i; i++) {
+                        for (let i = 0; players.length > i; i++) {
                                 currentRow = document.createElement("tr");
                                 currentCell = document.createElement("td");
-                                currentText = document.createTextNode(i + 1 + ". " + player[i]);
+                                currentText = document.createTextNode(i + 1 + ". " + players[i]);
                                 currentCell.appendChild(currentText);
                                 currentRow.appendChild(currentCell);
                                 currentCell = document.createElement("td");
                                 currentText = document.createTextNode(points[i]);
+                                currentCell.setAttribute("id", "text"+i);
                                 currentCell.appendChild(currentText);
                                 currentRow.appendChild(currentCell);
                                 mytablebody.appendChild(currentRow);
@@ -54,31 +56,15 @@
                         myTable.setAttribute("id", "playertable")
                         return myTable;
                 }
-
-                function build() {
-                        $.get("/game/" + sessionID, function (result) {
-                                field = result.field; points = result.points; currentPlayer = result.currentPlayer; won = result.won; playingPlayer = result.playingPlayer;
-                        })
+                function makeTable() {
                         node = document.getElementById("game");
-                        document.getElementById("playingplayer").innerHTML = playingPlayer + ', it\'s your turn!'
-                        if (document.getElementById("gametable") !== null)
-                                $("#gametable").remove();
                         var myTable = document.createElement("table");
                         var mytablebody = document.createElement("tbody");
                         for (var i = 0; i < height; i++) {
                                 currentRow = document.createElement("tr");
                                 for (var j = 0; j < width; j++) {
                                         currentCell = document.createElement("td");
-                                        if (currentPlayer === sessionID && field[(i * width) + j] === 0) currentCell.addEventListener("click", function () {
-                                                var $this = $(this);
-                                                var col = $this.index();
-                                                var row = $this.closest('tr').index();
-                                                $.post("/turn/" + sessionID, { "index": (row * width) + col },
-                                                        function (result) {
-                                                                field = result.field; points = result.points; won = result.won;
-                                                        }
-                                                );
-                                        })
+                                        currentCell.setAttribute("id", (i * width) + j);
                                         currentCell.innerHTML = '<img src="' + window.location.href + '' + pictureUrls[field[(i * width) + j]] + '" height ="150em" width = "150em" style="margin: 0.5em 0.5em 0.5em 0.5em;"/>';
                                         currentRow.appendChild(currentCell);
                                 }
@@ -89,6 +75,45 @@
                         node = document.getElementById("table");
                         node.appendChild(createTable(players, points));
                         node.appendChild(myTable);
+                }
+
+
+                function build() {
+                        $.get("/game/" + sessionID, function (result) {
+                                field = result.field; points = result.points; currentPlayer = result.currentPlayer; won = result.won; playingPlayer = result.playingPlayer;
+                                for (let i = 0; i < players.length; i++)
+                                 document.getElementById("text"+i).innerText = points[i];
+                        })
+                        if (currentPlayer !== -1) document.getElementById("playingplayer").innerHTML = playingPlayer + ', it\'s your turn!'
+                        else document.getElementById("playingplayer").innerHTML = "Waiting"
+                        // if (document.getElementById("gametable") !== null)
+                        // $("#gametable").remove();
+                        var differences = [];
+                        for (let i = 0; i < field.length; i++) {
+                                currentCell = document.getElementById(i);
+                                currentCell.onclick = null;
+                                if (oldfield[i] != field[i]) {
+                                        currentCell.innerHTML = '<img src="' + window.location.href + '' + pictureUrls[field[i]] + '" height ="150em" width = "150em" style="margin: 0.5em 0.5em 0.5em 0.5em;"/>';
+                                }
+                                if (currentPlayer === sessionID && field[i] === 0)
+                                        currentCell.addEventListener("click", function () {
+                                                if (clicked) return;
+                                                else clicked = true;
+                                                var $this = $(this);
+                                                var col = $this.index();
+                                                var row = $this.closest('tr').index();
+                                                var customIndex = (row * width) + col;
+                                                if (field[customIndex] !== 0) return;
+                                                $.post("/turn/" + sessionID, { "index": customIndex },
+                                                        function (result) {
+                                                                clicked = false;
+                                                                field = result.field; points = result.points; won = result.won;
+                                                        }
+                                                );
+                                        })
+                        }
+                        oldfield = field;
+
                         if (won !== -1) {
                                 var index;
                                 for (var i = 1; i < points.length; i++) {
@@ -101,15 +126,13 @@
                 }
 
                 function getConnectedPlayers() {
-                        var players;
-                        var points;
                         $.get("/connected/" + sessionID,
                                 function (result) {
                                         players = result.connectedPlayers;
-                                        var points = []
+                                        points = []
                                         for (i = 0; i < players.length; i++) { points.push(0); }
                                         node = document.getElementById("table");
-                                        node.appendChild(createTable(players, points));
+                                        node.appendChild(createTable());
                                 }
                         );
                 }
@@ -125,10 +148,10 @@
                                         $("#login").hide();
                                         $("#init").show();
                                         $.post("/connect",
-                                                { "sessionName": session, "playerName": name, size: { "width": width, "height": height } },
+                                                { "sessionName": session, "playerName": name, "size": { "width": width, "height": height } },
                                                 function (result) {
                                                         sessionID = result.sessionID;
-                                                        interval = setInterval(getConnectedPlayers, 1000);
+                                                        interval = setInterval(getConnectedPlayers, 500);
                                                 }
                                         );
 
@@ -138,12 +161,13 @@
                                 $("#ready").hide();
                                 $("#game").show();
                                 clearInterval(interval);
+                                makeTable();
                                 $.get("/init/" + sessionID,
                                         function (result) {
                                                 players = result.connectedPlayers;
                                                 field = result.field;
                                                 pictureUrls = result.pictureUrls;
-                                                interval = setInterval(build, 1000);
+                                                interval = setInterval(build, 500);
                                                 height = result.height;
                                                 width = result.width;
                                         }
@@ -154,7 +178,7 @@
 </head>
 
 <body>
-        <div align = center>
+        <div align=center>
                 <h1>Memory</h1>
 
                 <!-- Login Game -->
@@ -184,7 +208,7 @@
                 <!-- Init -->
                 <div id="init" hidden="true">
                         <div id="table"></div>
-                        <div id = "ready">
+                        <div id="ready">
                                 <p>Click ready to start the game</p>
                                 <button class="btn btn-primary" id="btn_init">Ready</button>
                         </div>
@@ -192,7 +216,9 @@
                 </div>
 
                 <!-- Game -->
-                <div id="game" hidden="true"><p id = "playingplayer"></p></div>
+                <div id="game" hidden="true">
+                        <p id="playingplayer"></p>
+                </div>
         </div>
 
 </body>

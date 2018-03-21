@@ -107,7 +107,7 @@ app.get('/init/:id', (req: Request, res: Response, next) => {
         game.currentPlayer = game.sessions[0];
         game.currentIndex = 0;
     }
-    res.json({ pictureUrls: game.pictureUrls, connectedPlayers: game.getPlayers(), field: game.field, height: game.size.height, width: game.size.width });
+    res.json({ pictureUrls: game.pictureUrls, connectedPlayers: game.sessions, field: game.field, height: game.size.height, width: game.size.width });
     next();
 })
 
