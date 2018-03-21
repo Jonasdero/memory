@@ -16,6 +16,7 @@
                 var pictureUrls = [];
                 var interval = null;
                 var currentPlayer = -1;
+                var playingPlayer = "";
                 var points = [];
 
                 function createTable(player, points) {
@@ -55,9 +56,10 @@
 
                 function build() {
                         $.get("/game/" + sessionID, function (result) {
-                                field = result.field; points = result.points; currentPlayer = result.currentPlayer;
+                                field = result.field; points = result.points; currentPlayer = result.currentPlayer; won = result.won; playingPlayer = result.playingPlayer;
                         })
                         node = document.getElementById("game");
+                        currentText = document.createTextNode(playingPlayer + ", it's your turn");
                         if (document.getElementById("gametable") !== null)
                                 $("#gametable").remove();
                         var myTable = document.createElement("table");
@@ -66,7 +68,7 @@
                                 currentRow = document.createElement("tr");
                                 for (var j = 0; j < width; j++) {
                                         currentCell = document.createElement("td");
-                                        if (currentPlayer === sessionID) currentCell.addEventListener("click", function () {
+                                        if (currentPlayer === sessionID && field[(i * width) + j] === 0) currentCell.addEventListener("click", function () {
                                                 var $this = $(this);
                                                 var col = $this.index();
                                                 var row = $this.closest('tr').index();
@@ -76,13 +78,15 @@
                                                         }
                                                 );
                                         })
-                                        currentCell.innerHTML = '<img src="' + window.location.href + '' + pictureUrls[field[(i * width) + j]] + '" height ="100" width = "100" />';
+                                        currentCell.innerHTML = '<img src="' + window.location.href + '' + pictureUrls[field[(i * width) + j]] + '" height ="10em" width = "10em" style="padding: 0.5em,0.5em,0.5em,0.5em;"/>';
                                         currentRow.appendChild(currentCell);
                                 }
                                 mytablebody.appendChild(currentRow);
                         }
                         myTable.appendChild(mytablebody);
                         myTable.setAttribute("id", "gametable")
+                        node = document.getElementById("table");
+                        node.appendChild(createTable(players, points));
                         node.appendChild(myTable);
                         if (won !== -1) {
                                 var index;
@@ -91,7 +95,7 @@
                                         if (points[i] > points[i - 1]) index = i;
                                 }
                                 clearInterval(interval);
-                                alert(player[index] + " hat gewonnen");
+                                alert(players[index] + " hat gewonnen");
                         }
                 }
 
@@ -130,7 +134,7 @@
                                 } else { $("#warning").show(); }
                         });
                         $("#btn_init").click(function () {
-                                $("#init").hide();
+                                $("#ready").hide();
                                 $("#game").show();
                                 clearInterval(interval);
                                 $.get("/init/" + sessionID,
@@ -139,6 +143,8 @@
                                                 field = result.field;
                                                 pictureUrls = result.pictureUrls;
                                                 interval = setInterval(build, 500);
+                                                height = result.height;
+                                                width = result.width;
                                         }
                                 );
                         });
@@ -147,41 +153,46 @@
 </head>
 
 <body>
-        <h1>Memory</h1>
-        <h2>lörrenz</h2>
-        <!-- Login Game -->
-        <div id="login">
-                <form>
-                        <div class="form-group">
-                                <label for="PName">Player Name</label>
-                                <input type="text" class="form-control" id="SName" placeholder="Enter Player Name">
-                        </div>
-                        <div class="form-group">
-                                <label for="Session">Session ID</label>
-                                <input type="text" class="form-control" id="Session" placeholder="Enter Session ID">
-                        </div>
-                        <div class="input-group mb-3">
-                                <select class="custom-select" id="inputGroupSelect01">
-                                        <option value="" selected>Gamesize</option>
-                                        <option value="4x4">4x4</option>
-                                        <option value="4x5">4x5</option>
-                                        <option value="6x6">6x6</option>
-                                </select>
-                        </div>
-                </form>
-                <div id="warning" hidden="true" class="bg-danger">Please fill in all fields!</div>
-                <button class="btn btn-primary" id="btn_login">Submit</button>
-        </div>
+        <div align = center>
+                <h1>Memory</h1>
 
-        <!-- Init -->
-        <div id="init" hidden="true">
-                <div id="table"></div>
-                <p>Click ready to start the game</p>
-                <button class="btn btn-primary" id="btn_init">Ready</button>
-        </div>
+                <!-- Login Game -->
+                <div id="login" class="col-">
+                        <form>
+                                <div class="form-group">
+                                        <label for="PName">Player Name</label>
+                                        <input type="text" class="form-control" id="SName" placeholder="Enter Player Name" style="width: 11em;">
+                                </div>
+                                <div class="form-group">
+                                        <label for="Session">Session ID</label>
+                                        <input type="text" class="form-control" id="Session" placeholder="Enter Session ID" style="width: 11em;">
+                                </div>
+                                <div class="input-group mb-3">
+                                        <select class="custom-select" id="inputGroupSelect01">
+                                                <option value="" selected>Gamesize</option>
+                                                <option value="4x4">4x4</option>
+                                                <option value="4x5">4x5</option>
+                                                <option value="6x6">6x6</option>
+                                        </select>
+                                </div>
+                        </form>
+                        <div id="warning" hidden="true" class="bg-danger">Please fill in all fields!</div>
+                        <button class="btn btn-primary" id="btn_login">Submit</button>
+                </div>
 
-        <!-- Game -->
-        <div id="game" hidden="true"></div>
+                <!-- Init -->
+                <div id="init" hidden="true">
+                        <div id="table"></div>
+                        <div id = "ready">
+                                <p>Click ready to start the game</p>
+                                <button class="btn btn-primary" id="btn_init">Ready</button>
+                        </div>
+
+                </div>
+
+                <!-- Game -->
+                <div id="game" hidden="true"></div>
+        </div>
 
 </body>
 
