@@ -20,7 +20,8 @@
                 var points = [];
 
                 function createTable(player, points) {
-                        $("#playertable").remove();
+                        if (document.getElementById("playertable") !== null)
+                                $("#playertable").remove();
                         var myTable = document.createElement("table");
                         var mytablehead = document.createElement("thead");
                         currentRow = document.createElement("tr");
@@ -59,7 +60,7 @@
                                 field = result.field; points = result.points; currentPlayer = result.currentPlayer; won = result.won; playingPlayer = result.playingPlayer;
                         })
                         node = document.getElementById("game");
-                        currentText = document.createTextNode(playingPlayer + ", it's your turn");
+                        document.getElementById("playingplayer").innerHTML = playingPlayer + ', it\'s your turn!'
                         if (document.getElementById("gametable") !== null)
                                 $("#gametable").remove();
                         var myTable = document.createElement("table");
@@ -78,7 +79,7 @@
                                                         }
                                                 );
                                         })
-                                        currentCell.innerHTML = '<img src="' + window.location.href + '' + pictureUrls[field[(i * width) + j]] + '" height ="10em" width = "10em" style="padding: 0.5em,0.5em,0.5em,0.5em;"/>';
+                                        currentCell.innerHTML = '<img src="' + window.location.href + '' + pictureUrls[field[(i * width) + j]] + '" height ="150em" width = "150em" style="margin: 0.5em 0.5em 0.5em 0.5em;"/>';
                                         currentRow.appendChild(currentCell);
                                 }
                                 mytablebody.appendChild(currentRow);
@@ -127,7 +128,7 @@
                                                 { "sessionName": session, "playerName": name, size: { "width": width, "height": height } },
                                                 function (result) {
                                                         sessionID = result.sessionID;
-                                                        interval = setInterval(getConnectedPlayers, 500);
+                                                        interval = setInterval(getConnectedPlayers, 1000);
                                                 }
                                         );
 
@@ -142,7 +143,7 @@
                                                 players = result.connectedPlayers;
                                                 field = result.field;
                                                 pictureUrls = result.pictureUrls;
-                                                interval = setInterval(build, 500);
+                                                interval = setInterval(build, 1000);
                                                 height = result.height;
                                                 width = result.width;
                                         }
@@ -191,7 +192,7 @@
                 </div>
 
                 <!-- Game -->
-                <div id="game" hidden="true"></div>
+                <div id="game" hidden="true"><p id = "playingplayer"></p></div>
         </div>
 
 </body>

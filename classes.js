@@ -47,6 +47,14 @@ var Game = (function () {
                 return i;
         return -1;
     };
+    Game.prototype.getPlayerName = function (sessionID) {
+        for (var _i = 0, _a = this.playerData; _i < _a.length; _i++) {
+            var data = _a[_i];
+            if (data.id === sessionID)
+                return data.name;
+        }
+        return "FELIXXX";
+    };
     Game.prototype.waitAndTurnCards = function () {
         var _this = this;
         setTimeout(function () {

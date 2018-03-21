@@ -93,7 +93,7 @@ app.get('/init/:id', function (req, res, next) {
 app.get('/game/:id', function (req, res, next) {
     console.log('GET -> game/' + req.session);
     var game = req.game;
-    res.json({ points: game.getPlayerPoints(), field: game.field, currentPlayer: game.currentPlayer, won: game.won });
+    res.json({ points: game.getPlayerPoints(), field: game.field, currentPlayer: game.currentPlayer, won: game.won, playingPlayer: game.getPlayerName(game.currentPlayer) });
     next();
 });
 app.post('/turn/:id', function (req, res, next) {
