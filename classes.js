@@ -18,12 +18,11 @@ var Game = (function () {
         this.turn = 0;
         this.currentPlayer = -1;
         this.won = -1;
-        var a = 1;
-        for (var i = 0; i < this.size.width * this.size.height; i++) {
-            this.cardOrder.push(a);
+        for (var i = 0; i < this.size.width * this.size.height / 2; i++) {
+            this.cardOrder.push(i);
+            this.cardOrder.push(i);
             this.field.push(0);
-            if (i % 2 != 0)
-                a++;
+            this.field.push(0);
         }
         var newCardOrder = [];
         while (this.cardOrder.length > 0) {
