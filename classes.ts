@@ -28,6 +28,11 @@ export class Game {
             this.field.push(0);
             if (i % 2 != 0) a++;
         }
+        var newCardOrder: number[] = [];
+        while (this.cardOrder.length > 0) {
+            newCardOrder.push(this.cardOrder.splice(Math.random() * this.cardOrder.length, 1)[0]);
+        }
+        this.cardOrder = newCardOrder;
     }
 
     getPlayers(): string[] {
