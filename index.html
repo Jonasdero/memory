@@ -66,8 +66,7 @@
                                 currentRow = document.createElement("tr");
                                 for (var j = 0; j < width; j++) {
                                         currentCell = document.createElement("td");
-                                        currentCell.addEventListener("click", function () {
-                                                if (currentPlayer !== sessionID) return;
+                                        if (currentPlayer === sessionID) currentCell.addEventListener("click", function () {
                                                 var $this = $(this);
                                                 var col = $this.index();
                                                 var row = $this.closest('tr').index();
