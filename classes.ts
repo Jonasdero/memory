@@ -20,7 +20,7 @@ export class Game {
         this.turn = 0;
         this.currentPlayer = -1;
         this.won = -1;
-        let a = 0;
+        let a = 1;
         for (let i = 0; i < this.size.width * this.size.height; i++) {
             this.cardOrder.push(a);
             this.field.push(0);
@@ -63,7 +63,7 @@ export class Game {
         this.turn++;
         this.turnedCards.push(this.cardOrder[index]);
         this.turnedIndexes.push(index);
-
+        this.field[index] = this.cardOrder[index];
         if (this.turn === 2) {
             if (this.turnedCards[0] === this.turnedCards[1]) {
                 this.foundPairs.push(this.turnedCards[0]);
@@ -79,6 +79,12 @@ export class Game {
                 this.waitAndTurnCards();
             }
         }
+        console.log(this.field);
+        console.log(this.cardOrder);
+        console.log(this.turnedCards);
+        console.log(this.turnedIndexes);
+        console.log(this.currentPlayer);
+        console.log(this.nextPlayer);
     }
 
     addPictures(count: number, pictures: string[]) {

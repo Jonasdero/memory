@@ -16,7 +16,7 @@ var Game = (function () {
         this.turn = 0;
         this.currentPlayer = -1;
         this.won = -1;
-        var a = 0;
+        var a = 1;
         for (var i = 0; i < this.size.width * this.size.height; i++) {
             this.cardOrder.push(a);
             this.field.push(0);
@@ -63,6 +63,7 @@ var Game = (function () {
         this.turn++;
         this.turnedCards.push(this.cardOrder[index]);
         this.turnedIndexes.push(index);
+        this.field[index] = this.cardOrder[index];
         if (this.turn === 2) {
             if (this.turnedCards[0] === this.turnedCards[1]) {
                 this.foundPairs.push(this.turnedCards[0]);
@@ -81,6 +82,12 @@ var Game = (function () {
                 this.waitAndTurnCards();
             }
         }
+        console.log(this.field);
+        console.log(this.cardOrder);
+        console.log(this.turnedCards);
+        console.log(this.turnedIndexes);
+        console.log(this.currentPlayer);
+        console.log(this.nextPlayer);
     };
     Game.prototype.addPictures = function (count, pictures) {
         this.pictureUrls.push('/memory.jpg');
