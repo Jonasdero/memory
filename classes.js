@@ -24,6 +24,11 @@ var Game = (function () {
             if (i % 2 != 0)
                 a++;
         }
+        var newCardOrder = [];
+        while (this.cardOrder.length > 0) {
+            newCardOrder.push(this.cardOrder.splice(Math.random() * this.cardOrder.length, 1)[0]);
+        }
+        this.cardOrder = newCardOrder;
     }
     Game.prototype.getPlayers = function () {
         var players = [];
@@ -46,6 +51,14 @@ var Game = (function () {
             if (this.playerData[i].id === sessionID)
                 return i;
         return -1;
+    };
+    Game.prototype.getPlayerName = function (sessionID) {
+        for (var _i = 0, _a = this.playerData; _i < _a.length; _i++) {
+            var data = _a[_i];
+            if (data.id === sessionID)
+                return data.name;
+        }
+        return "FELIXXX";
     };
     Game.prototype.waitAndTurnCards = function () {
         var _this = this;
