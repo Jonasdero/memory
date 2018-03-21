@@ -82,8 +82,12 @@ app.get('/connected/:id', function (req, res, next) {
 app.get('/init/:id', function (req, res, next) {
     console.log('GET -> init/' + req.session);
     var game = req.game;
-    game.currentPlayer = game.sessions[0];
-    res.json({ pictureUrls: game.pictureUrls, connectedPlayers: game.getPlayers(), field: game.field });
+    game.joinedSessions.push(req.session);
+    if (game.joinedSessions.length == game.sessions.length) {
+        game.currentPlayer = game.sessions[0];
+        game.currentIndex = 0;
+    }
+    res.json({ pictureUrls: game.pictureUrls, connectedPlayers: game.getPlayers(), field: game.field, height: game.size.height, width: game.size.width });
     next();
 });
 app.get('/game/:id', function (req, res, next) {

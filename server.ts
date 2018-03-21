@@ -14,7 +14,7 @@ var playerSessionIDs: number[] = [];
 var allPictureURLS: string[] = [];
 var games: classes.Game[] = [];
 
-var createSessionID = function (): number {    
+var createSessionID = function (): number {
     let sessionID = playerSessionIDs.length;
     playerSessionIDs.push(sessionID);
     console.log(playerSessionIDs);
@@ -102,8 +102,12 @@ app.get('/connected/:id', (req: Request, res: Response, next) => {
 app.get('/init/:id', (req: Request, res: Response, next) => {
     console.log('GET -> init/' + req.session);
     let game: classes.Game = req.game;
-    game.currentPlayer = game.sessions[0];
-    res.json({ pictureUrls: game.pictureUrls, connectedPlayers: game.getPlayers(), field: game.field });
+    game.joinedSessions.push(req.session);
+    if (game.joinedSessions.length == game.sessions.length) {
+        game.currentPlayer = game.sessions[0];
+        game.currentIndex = 0;
+    }
+    res.json({ pictureUrls: game.pictureUrls, connectedPlayers: game.getPlayers(), field: game.field, height: game.size.height, width: game.size.width });
     next();
 })
 

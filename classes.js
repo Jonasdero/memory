@@ -11,6 +11,7 @@ var Game = (function () {
         this.turnedIndexes = [];
         this.sessions = [];
         this.foundPairs = [];
+        this.joinedSessions = [];
         this.size.width = +size.width;
         this.size.height = +size.height;
         this.turn = 0;
@@ -48,16 +49,15 @@ var Game = (function () {
     };
     Game.prototype.waitAndTurnCards = function () {
         var _this = this;
-        setInterval(function () {
+        setTimeout(function () {
             _this.currentPlayer = _this.nextPlayer;
-            _this.turn = 0;
             for (var _i = 0, _a = _this.turnedIndexes; _i < _a.length; _i++) {
                 var index = _a[_i];
                 _this.field[index] = 0;
             }
             _this.turnedIndexes = [];
             _this.turnedCards = [];
-        }, 2500);
+        }, 1500);
     };
     Game.prototype.makeTurn = function (sessionID, index) {
         this.turn++;
@@ -65,6 +65,7 @@ var Game = (function () {
         this.turnedIndexes.push(index);
         this.field[index] = this.cardOrder[index];
         if (this.turn === 2) {
+            this.turn = 0;
             if (this.turnedCards[0] === this.turnedCards[1]) {
                 this.foundPairs.push(this.turnedCards[0]);
                 this.turnedCards = [];
@@ -74,20 +75,14 @@ var Game = (function () {
                     this.won = 1;
             }
             else {
-                var index_1 = this.getPlayerIndex(this.currentPlayer) + 1;
-                if (index_1 = this.playerData.length)
-                    index_1 = 0;
-                this.nextPlayer = this.playerData[index_1].id;
+                this.currentIndex++;
+                if (this.currentIndex == this.sessions.length)
+                    this.currentIndex = 0;
+                this.nextPlayer = this.sessions[this.currentIndex];
                 this.currentPlayer = -1;
                 this.waitAndTurnCards();
             }
         }
-        console.log(this.field);
-        console.log(this.cardOrder);
-        console.log(this.turnedCards);
-        console.log(this.turnedIndexes);
-        console.log(this.currentPlayer);
-        console.log(this.nextPlayer);
     };
     Game.prototype.addPictures = function (count, pictures) {
         this.pictureUrls.push('/memory.jpg');

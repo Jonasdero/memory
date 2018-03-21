@@ -9,10 +9,12 @@ export class Game {
     won: number;
     nextPlayer: number;
     currentPlayer: number;
+    currentIndex: number;
     turnedCards: number[] = [];
     turnedIndexes: number[] = [];
     sessions: number[] = [];
     foundPairs: number[] = [];
+    joinedSessions: number[] = [];
     // Picture
     constructor(size) {
         this.size.width = +size.width;
@@ -49,14 +51,13 @@ export class Game {
     }
 
     waitAndTurnCards() {
-        setInterval(() => {
+        setTimeout(() => {
             this.currentPlayer = this.nextPlayer;
-            this.turn = 0;
             for (let index of this.turnedIndexes)
                 this.field[index] = 0;
             this.turnedIndexes = [];
             this.turnedCards = [];
-        }, 2500)
+        }, 1500)
     }
 
     makeTurn(sessionID: number, index: number) {
@@ -65,6 +66,7 @@ export class Game {
         this.turnedIndexes.push(index);
         this.field[index] = this.cardOrder[index];
         if (this.turn === 2) {
+            this.turn = 0;
             if (this.turnedCards[0] === this.turnedCards[1]) {
                 this.foundPairs.push(this.turnedCards[0]);
                 this.turnedCards = [];
@@ -72,20 +74,15 @@ export class Game {
                 this.playerData[this.getPlayerIndex(sessionID)].points++;
                 if (this.foundPairs.length == (this.size.height * this.size.width) / 2) this.won = 1;
             } else {
-                let index = this.getPlayerIndex(this.currentPlayer) + 1;
-                if (index = this.playerData.length) index = 0;
-                this.nextPlayer = this.playerData[index].id
+                this.currentIndex++;
+                if (this.currentIndex == this.sessions.length) this.currentIndex = 0;
+                this.nextPlayer = this.sessions[this.currentIndex];
                 this.currentPlayer = -1;
                 this.waitAndTurnCards();
             }
         }
-        console.log(this.field);
-        console.log(this.cardOrder);
-        console.log(this.turnedCards);
-        console.log(this.turnedIndexes);
-        console.log(this.currentPlayer);
-        console.log(this.nextPlayer);
     }
+
 
     addPictures(count: number, pictures: string[]) {
         this.pictureUrls.push('/memory.jpg')
