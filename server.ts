@@ -121,9 +121,8 @@ app.get('/game/:id', (req: Request, res: Response, next) => {
 // posts index
 // returns points, field, turn, won
 app.post('/turn/:id', (req: Request, res: Response, next) => {
-    let index = JSON.parse(req.body).index;
+    let index = req.body.index;
     console.log('POST -> turn/' + req.session + '/' + index);
-    console.log(req.body);
     let game: classes.Game = req.game;
     game.makeTurn(req.session, index);
     res.json({ points: game.getPlayerPoints(), field: game.field, currentPlayer: game.currentPlayer, won: game.won });

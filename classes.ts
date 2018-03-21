@@ -82,7 +82,7 @@ export class Game {
     }
 
     addPictures(count: number, pictures: string[]) {
-        this.pictureUrls.push('/memory.txt')
+        this.pictureUrls.push('/memory.jpg')
         let taken = [];
         while (count > 0) {
             var index = Math.floor(Math.random() * (pictures.length - 1));

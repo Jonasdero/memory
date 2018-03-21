@@ -1,7 +1,6 @@
 "use strict";
-exports.__esModule = true;
-var Game = /** @class */ (function () {
-    // Picture
+Object.defineProperty(exports, "__esModule", { value: true });
+var Game = (function () {
     function Game(size) {
         this.size = { width: 0, height: 0 };
         this.pictureUrls = [];
@@ -84,7 +83,7 @@ var Game = /** @class */ (function () {
         }
     };
     Game.prototype.addPictures = function (count, pictures) {
-        this.pictureUrls.push('/memory.txt');
+        this.pictureUrls.push('/memory.jpg');
         var taken = [];
         while (count > 0) {
             var index = Math.floor(Math.random() * (pictures.length - 1));
@@ -98,7 +97,7 @@ var Game = /** @class */ (function () {
     return Game;
 }());
 exports.Game = Game;
-var PlayerData = /** @class */ (function () {
+var PlayerData = (function () {
     function PlayerData(id, name) {
         this.id = id;
         this.name = name;
@@ -107,3 +106,4 @@ var PlayerData = /** @class */ (function () {
     return PlayerData;
 }());
 exports.PlayerData = PlayerData;
+//# sourceMappingURL=classes.js.map
