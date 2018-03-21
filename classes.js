@@ -12,6 +12,7 @@ var Game = (function () {
         this.sessions = [];
         this.foundPairs = [];
         this.joinedSessions = [];
+        this.connected = [];
         this.size.width = +size.width;
         this.size.height = +size.height;
         this.turn = 0;
@@ -70,7 +71,19 @@ var Game = (function () {
             }
             _this.turnedIndexes = [];
             _this.turnedCards = [];
-        }, 500);
+        }, 300);
+    };
+    Game.prototype.deletePlayer = function (index) {
+        if (this.currentPlayer == this.sessions[index]) {
+            this.currentIndex++;
+            if (this.currentIndex == this.sessions.length)
+                this.currentIndex = 0;
+            this.currentPlayer = this.sessions[this.currentIndex];
+        }
+        this.playerData.splice(index, 1);
+        this.joinedSessions.splice(index, 1);
+        this.sessions.splice(index, 1);
+        this.connected.splice(index, 1);
     };
     Game.prototype.makeTurn = function (sessionID, index) {
         this.turn++;

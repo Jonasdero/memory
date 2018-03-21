@@ -17,7 +17,6 @@ var games: classes.Game[] = [];
 var createSessionID = function (): number {
     let sessionID = playerSessionIDs.length;
     playerSessionIDs.push(sessionID);
-    console.log(playerSessionIDs);
     return sessionID;
 }
 
@@ -65,6 +64,7 @@ app.post('/connect', (req: Request, res: Response) => {
             let sessionID = createSessionID();
             game.playerData.push(new classes.PlayerData(sessionID, data.playerName));
             game.sessions.push(sessionID);
+            game.connected.push(0);
             res.json({ sessionID: sessionID });
             return;
         }
@@ -75,6 +75,7 @@ app.post('/connect', (req: Request, res: Response) => {
     game.playerData.push(new classes.PlayerData(sessionID, data.playerName));
     game.addPictures((game.size.height * game.size.width) / 2, allPictureURLS);
     game.sessions.push(sessionID);
+    game.connected.push(0);
     games.push(game);
     res.json({ sessionID: sessionID });
 });
@@ -90,8 +91,16 @@ app.param('id', (req, res, next, val) => {
 // Gets connected players from current session
 // returns string array with player names
 app.get('/connected/:id', (req: Request, res: Response, next) => {
-    console.log('GET -> connected/' + req.session);
+    // console.log('GET -> connected/' + req.session);
     let game: classes.Game = req.game;
+    game.connected[game.sessions.indexOf(req.session)]++;
+
+    let max = 0;
+    for (let i = 0; i < game.connected.length; i++)
+        if (max < game.connected[i]) max = game.connected[i];
+    for (let i = 0; i < game.connected.length; i++)
+        if (game.connected[i] - max > 8)
+            game.deletePlayer(i);
     next();
     res.json({ connectedPlayers: game.getPlayers() });
 });
@@ -115,8 +124,15 @@ app.get('/init/:id', (req: Request, res: Response, next) => {
 // Get current game status
 // returns points, field, turn, won
 app.get('/game/:id', (req: Request, res: Response, next) => {
-    console.log('GET -> game/' + req.session);
+    // console.log('GET -> game/' + req.session);
     let game: classes.Game = req.game;
+    game.connected[game.sessions.indexOf(req.session)]++;
+    let max = 0;
+    for (let i = 0; i < game.connected.length; i++)
+        if (max < game.connected[i]) max = game.connected[i];
+    for (let i = 0; i < game.connected.length; i++)
+        if (game.connected[i] - max > 8)
+            game.deletePlayer(i);
     res.json({ points: game.getPlayerPoints(), field: game.field, currentPlayer: game.currentPlayer, won: game.won, playingPlayer: game.getPlayerName(game.currentPlayer) });
     next();
 });

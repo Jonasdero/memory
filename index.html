@@ -11,6 +11,7 @@
                 var width = -1;
                 var height = -1;
                 var won = -1;
+                var playernames = [];
                 var players = [];
                 var sessionID = -1;
                 var pictureUrls = [];
@@ -20,6 +21,7 @@
                 var points = [];
                 var oldfield = [];
                 var clicked = false;
+
                 function createTable() {
                         if (document.getElementById("playertable") !== null)
                                 $("#playertable").remove();
@@ -37,15 +39,15 @@
                         mytablehead.appendChild(currentRow);
                         var mytablebody = document.createElement("tbody");
 
-                        for (let i = 0; players.length > i; i++) {
+                        for (let i = 0; playernames.length > i; i++) {
                                 currentRow = document.createElement("tr");
                                 currentCell = document.createElement("td");
-                                currentText = document.createTextNode(i + 1 + ". " + players[i]);
+                                currentText = document.createTextNode(i + 1 + ". " + playernames[i]);
                                 currentCell.appendChild(currentText);
                                 currentRow.appendChild(currentCell);
                                 currentCell = document.createElement("td");
                                 currentText = document.createTextNode(points[i]);
-                                currentCell.setAttribute("id", "text"+i);
+                                currentCell.setAttribute("id", "text" + i);
                                 currentCell.appendChild(currentText);
                                 currentRow.appendChild(currentCell);
                                 mytablebody.appendChild(currentRow);
@@ -54,8 +56,9 @@
                         myTable.appendChild(mytablebody);
                         myTable.setAttribute("class", "table");
                         myTable.setAttribute("id", "playertable")
-                        return myTable;
+                        document.getElementById("table").appendChild(myTable);
                 }
+
                 function makeTable() {
                         node = document.getElementById("game");
                         var myTable = document.createElement("table");
@@ -66,6 +69,19 @@
                                         currentCell = document.createElement("td");
                                         currentCell.setAttribute("id", (i * width) + j);
                                         currentCell.innerHTML = '<img src="' + window.location.href + '' + pictureUrls[field[(i * width) + j]] + '" height ="150em" width = "150em" style="margin: 0.5em 0.5em 0.5em 0.5em;"/>';
+                                        currentCell.addEventListener("click", function () {                                              
+                                                var col = $(this).index();
+                                                var row = $(this).closest('tr').index();
+                                                var customIndex = (row * width) + col;
+                                                if (clicked || field[customIndex] !== 0 || currentPlayer !== sessionID) return;
+                                                clicked = true;
+                                                $.post("/turn/" + sessionID, { "index": customIndex },
+                                                        function (result) {
+                                                                clicked = false;
+                                                                field = result.field; points = result.points; won = result.won;
+                                                        }
+                                                );
+                                        })
                                         currentRow.appendChild(currentCell);
                                 }
                                 mytablebody.appendChild(currentRow);
@@ -73,7 +89,6 @@
                         myTable.appendChild(mytablebody);
                         myTable.setAttribute("id", "gametable")
                         node = document.getElementById("table");
-                        node.appendChild(createTable(players, points));
                         node.appendChild(myTable);
                 }
 
@@ -82,57 +97,36 @@
                         $.get("/game/" + sessionID, function (result) {
                                 field = result.field; points = result.points; currentPlayer = result.currentPlayer; won = result.won; playingPlayer = result.playingPlayer;
                                 for (let i = 0; i < players.length; i++)
-                                 document.getElementById("text"+i).innerText = points[i];
+                                        document.getElementById("text" + i).innerText = points[i];
                         })
                         if (currentPlayer !== -1) document.getElementById("playingplayer").innerHTML = playingPlayer + ', it\'s your turn!'
-                        else document.getElementById("playingplayer").innerHTML = "Waiting"
+                        else document.getElementById("playingplayer").innerHTML = "Waiting";
                         // if (document.getElementById("gametable") !== null)
                         // $("#gametable").remove();
                         var differences = [];
                         for (let i = 0; i < field.length; i++) {
                                 currentCell = document.getElementById(i);
-                                currentCell.onclick = null;
                                 if (oldfield[i] != field[i]) {
                                         currentCell.innerHTML = '<img src="' + window.location.href + '' + pictureUrls[field[i]] + '" height ="150em" width = "150em" style="margin: 0.5em 0.5em 0.5em 0.5em;"/>';
                                 }
-                                if (currentPlayer === sessionID && field[i] === 0)
-                                        currentCell.addEventListener("click", function () {
-                                                if (clicked) return;
-                                                else clicked = true;
-                                                var $this = $(this);
-                                                var col = $this.index();
-                                                var row = $this.closest('tr').index();
-                                                var customIndex = (row * width) + col;
-                                                if (field[customIndex] !== 0) return;
-                                                $.post("/turn/" + sessionID, { "index": customIndex },
-                                                        function (result) {
-                                                                clicked = false;
-                                                                field = result.field; points = result.points; won = result.won;
-                                                        }
-                                                );
-                                        })
                         }
                         oldfield = field;
 
                         if (won !== -1) {
                                 var index;
-                                for (var i = 1; i < points.length; i++) {
-                                        index = 0;
-                                        if (points[i] > points[i - 1]) index = i;
-                                }
+                                for (var i = 1; i < points.length; i++) { index = 0; if (points[i] > points[i - 1]) index = i; }
                                 clearInterval(interval);
-                                alert(players[index] + " hat gewonnen");
+                                alert(playernames[index] + " hat gewonnen");
                         }
                 }
 
                 function getConnectedPlayers() {
                         $.get("/connected/" + sessionID,
                                 function (result) {
-                                        players = result.connectedPlayers;
+                                        playernames = result.connectedPlayers;
                                         points = []
-                                        for (i = 0; i < players.length; i++) { points.push(0); }
-                                        node = document.getElementById("table");
-                                        node.appendChild(createTable());
+                                        for (i = 0; i < playernames.length; i++) { points.push(0); }
+                                        createTable();
                                 }
                         );
                 }
@@ -151,7 +145,7 @@
                                                 { "sessionName": session, "playerName": name, "size": { "width": width, "height": height } },
                                                 function (result) {
                                                         sessionID = result.sessionID;
-                                                        interval = setInterval(getConnectedPlayers, 500);
+                                                        interval = setInterval(getConnectedPlayers, 300);
                                                 }
                                         );
 
@@ -161,15 +155,15 @@
                                 $("#ready").hide();
                                 $("#game").show();
                                 clearInterval(interval);
-                                makeTable();
                                 $.get("/init/" + sessionID,
                                         function (result) {
                                                 players = result.connectedPlayers;
                                                 field = result.field;
                                                 pictureUrls = result.pictureUrls;
-                                                interval = setInterval(build, 500);
                                                 height = result.height;
                                                 width = result.width;
+                                                makeTable();
+                                                interval = setInterval(build, 300);
                                         }
                                 );
                         });

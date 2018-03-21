@@ -15,8 +15,11 @@ export class Game {
     sessions: number[] = [];
     foundPairs: number[] = [];
     joinedSessions: number[] = [];
+
+    connected: number[] = [];
     // Picture
     constructor(size) {
+
         this.size.width = +size.width;
         this.size.height = +size.height;
         this.turn = 0;
@@ -66,9 +69,18 @@ export class Game {
                 this.field[index] = 0;
             this.turnedIndexes = [];
             this.turnedCards = [];
-        }, 500)
+        }, 300)
     }
-
+    deletePlayer(index: number) {
+        if (this.currentPlayer == this.sessions[index]){
+            this.currentIndex++;
+        if (this.currentIndex == this.sessions.length) this.currentIndex = 0;
+        this.currentPlayer = this.sessions[this.currentIndex];}
+        this.playerData.splice(index, 1);
+        this.joinedSessions.splice(index, 1);
+        this.sessions.splice(index, 1);
+        this.connected.splice(index, 1);
+    }
     makeTurn(sessionID: number, index: number) {
         this.turn++;
         this.turnedCards.push(this.cardOrder[index]);

@@ -55,6 +55,7 @@ app.post('/connect', function (req, res) {
             var sessionID_1 = createSessionID();
             game_1.playerData.push(new classes.PlayerData(sessionID_1, data.playerName));
             game_1.sessions.push(sessionID_1);
+            game_1.connected.push(0);
             res.json({ sessionID: sessionID_1 });
             return;
         }
@@ -65,6 +66,7 @@ app.post('/connect', function (req, res) {
     game.playerData.push(new classes.PlayerData(sessionID, data.playerName));
     game.addPictures((game.size.height * game.size.width) / 2, allPictureURLS);
     game.sessions.push(sessionID);
+    game.connected.push(0);
     games.push(game);
     res.json({ sessionID: sessionID });
 });
@@ -74,8 +76,15 @@ app.param('id', function (req, res, next, val) {
     next();
 });
 app.get('/connected/:id', function (req, res, next) {
-    console.log('GET -> connected/' + req.session);
     var game = req.game;
+    game.connected[game.sessions.indexOf(req.session)]++;
+    var max = 0;
+    for (var i = 0; i < game.connected.length; i++)
+        if (max < game.connected[i])
+            max = game.connected[i];
+    for (var i = 0; i < game.connected.length; i++)
+        if (game.connected[i] - max > 8)
+            game.deletePlayer(i);
     next();
     res.json({ connectedPlayers: game.getPlayers() });
 });
@@ -91,8 +100,15 @@ app.get('/init/:id', function (req, res, next) {
     next();
 });
 app.get('/game/:id', function (req, res, next) {
-    console.log('GET -> game/' + req.session);
     var game = req.game;
+    game.connected[game.sessions.indexOf(req.session)]++;
+    var max = 0;
+    for (var i = 0; i < game.connected.length; i++)
+        if (max < game.connected[i])
+            max = game.connected[i];
+    for (var i = 0; i < game.connected.length; i++)
+        if (game.connected[i] - max > 8)
+            game.deletePlayer(i);
     res.json({ points: game.getPlayerPoints(), field: game.field, currentPlayer: game.currentPlayer, won: game.won, playingPlayer: game.getPlayerName(game.currentPlayer) });
     next();
 });
