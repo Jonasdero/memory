@@ -98,9 +98,11 @@ app.get('/connected/:id', (req: Request, res: Response, next) => {
     let max = 0;
     for (let i = 0; i < game.connected.length; i++)
         if (max < game.connected[i]) max = game.connected[i];
+
     for (let i = 0; i < game.connected.length; i++)
         if (game.connected[i] - max > 8)
             game.deletePlayer(i);
+
     next();
     res.json({ connectedPlayers: game.getPlayers() });
 });
@@ -128,11 +130,14 @@ app.get('/game/:id', (req: Request, res: Response, next) => {
     let game: classes.Game = req.game;
     game.connected[game.sessions.indexOf(req.session)]++;
     let max = 0;
+    
     for (let i = 0; i < game.connected.length; i++)
         if (max < game.connected[i]) max = game.connected[i];
+
     for (let i = 0; i < game.connected.length; i++)
         if (game.connected[i] - max > 8)
             game.deletePlayer(i);
+
     res.json({ points: game.getPlayerPoints(), field: game.field, currentPlayer: game.currentPlayer, won: game.won, playingPlayer: game.getPlayerName(game.currentPlayer) });
     next();
 });

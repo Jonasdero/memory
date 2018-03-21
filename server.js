@@ -15,7 +15,6 @@ var games = [];
 var createSessionID = function () {
     var sessionID = playerSessionIDs.length;
     playerSessionIDs.push(sessionID);
-    console.log(playerSessionIDs);
     return sessionID;
 };
 var findgame = function (sessionID) {

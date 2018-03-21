@@ -25,11 +25,11 @@ export class Game {
         this.turn = 0;
         this.currentPlayer = -1;
         this.won = -1;
-        let a = 1;
-        for (let i = 0; i < this.size.width * this.size.height; i++) {
-            this.cardOrder.push(a);
+        for (let i = 0; i < this.size.width * this.size.height/2; i++) {
+            this.cardOrder.push(i);
+            this.cardOrder.push(i);
             this.field.push(0);
-            if (i % 2 != 0) a++;
+            this.field.push(0);
         }
         var newCardOrder: number[] = [];
         while (this.cardOrder.length > 0) {
