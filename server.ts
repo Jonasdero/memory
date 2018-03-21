@@ -117,7 +117,7 @@ app.get('/init/:id', (req: Request, res: Response, next) => {
 app.get('/game/:id', (req: Request, res: Response, next) => {
     console.log('GET -> game/' + req.session);
     let game: classes.Game = req.game;
-    res.json({ points: game.getPlayerPoints(), field: game.field, currentPlayer: game.currentPlayer, won: game.won });
+    res.json({ points: game.getPlayerPoints(), field: game.field, currentPlayer: game.currentPlayer, won: game.won, playingPlayer: game.getPlayerName(game.currentPlayer) });
     next();
 });
 

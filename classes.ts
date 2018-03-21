@@ -49,7 +49,11 @@ export class Game {
             if (this.playerData[i].id === sessionID) return i;
         return -1;
     }
-
+    getPlayerName(sessionID: number): string {
+        for (let data of this.playerData)
+            if (data.id === sessionID) return data.name;
+        return "FELIXXX";
+    }
     waitAndTurnCards() {
         setTimeout(() => {
             this.currentPlayer = this.nextPlayer;
