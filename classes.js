@@ -24,6 +24,11 @@ var Game = (function () {
             if (i % 2 != 0)
                 a++;
         }
+        var newCardOrder = [];
+        while (this.cardOrder.length > 0) {
+            newCardOrder.push(this.cardOrder.splice(Math.random() * this.cardOrder.length, 1)[0]);
+        }
+        this.cardOrder = newCardOrder;
     }
     Game.prototype.getPlayers = function () {
         var players = [];
