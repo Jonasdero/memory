@@ -43,7 +43,7 @@ fs.readdir(picturePath, function (err, items) {
     }
 });
 app.get('/', function (req, res) {
-    res.sendFile(path.join(__dirname + '/index.html'));
+    res.sendFile(path.join(__dirname, '../client', 'index.html'));
 });
 app.post('/connect', function (req, res) {
     console.log('POST -> connect/');
@@ -63,7 +63,7 @@ app.post('/connect', function (req, res) {
     game.name = data.sessionName;
     var sessionID = createSessionID();
     game.playerData.push(new classes.PlayerData(sessionID, data.playerName));
-    game.addPictures((game.size.height * game.size.width) / 2, allPictureURLS);
+    game.addPictures((game.data.size.height * game.data.size.width) / 2, allPictureURLS);
     game.sessions.push(sessionID);
     game.connected.push(0);
     games.push(game);
@@ -85,7 +85,7 @@ app.get('/connected/:id', function (req, res, next) {
         if (game.connected[i] - max > 8)
             game.deletePlayer(i);
     next();
-    res.json({ connectedPlayers: game.getPlayers() });
+    res.json({ connectedPlayers: game.sessions });
 });
 app.get('/init/:id', function (req, res, next) {
     console.log('GET -> init/' + req.session);
@@ -95,7 +95,7 @@ app.get('/init/:id', function (req, res, next) {
         game.currentPlayer = game.sessions[0];
         game.currentIndex = 0;
     }
-    res.json({ pictureUrls: game.pictureUrls, connectedPlayers: game.sessions, field: game.field, height: game.size.height, width: game.size.width });
+    res.json({ connectedPlayers: game.sessions, data: game.data });
     next();
 });
 app.get('/game/:id', function (req, res, next) {
@@ -108,7 +108,7 @@ app.get('/game/:id', function (req, res, next) {
     for (var i = 0; i < game.connected.length; i++)
         if (game.connected[i] - max > 8)
             game.deletePlayer(i);
-    res.json({ points: game.getPlayerPoints(), field: game.field, currentPlayer: game.currentPlayer, won: game.won, playingPlayer: game.getPlayerName(game.currentPlayer) });
+    res.json({ data: game.data, points: game.getPlayerPoints(), currentPlayer: game.currentPlayer, won: game.won, playingPlayer: game.getPlayerName(game.currentPlayer) });
     next();
 });
 app.post('/turn/:id', function (req, res, next) {
@@ -116,10 +116,11 @@ app.post('/turn/:id', function (req, res, next) {
     console.log('POST -> turn/' + req.session + '/' + index);
     var game = req.game;
     game.makeTurn(req.session, index);
-    res.json({ points: game.getPlayerPoints(), field: game.field, currentPlayer: game.currentPlayer, won: game.won });
+    res.json({ data: game.data, points: game.getPlayerPoints(), currentPlayer: game.currentPlayer, won: game.won });
     next();
 });
 app.use(express.static('pictures'));
+app.use(express.static('client'));
 app.listen(PORT, function () {
     console.log("App is running at http://localhost:" + PORT);
 });

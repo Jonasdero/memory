@@ -1,0 +1,58 @@
+<html DOCTYPE HTML5>
+
+<head>
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap-theme.min.css">
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+
+        <script src="client.js"></script>
+</head>
+
+<body>
+        <div align=center>
+                <h1>Memory</h1>
+
+                <!-- Login Game -->
+                <div id="login" class="col-">
+                        <form>
+                                <div class="form-group">
+                                        <label for="PName">Player Name</label>
+                                        <input type="text" class="form-control" id="SName" placeholder="Enter Player Name" style="width: 11em;">
+                                </div>
+                                <div class="form-group">
+                                        <label for="Session">Session ID</label>
+                                        <input type="text" class="form-control" id="Session" placeholder="Enter Session ID" style="width: 11em;">
+                                </div>
+                                <div class="input-group mb-3">
+                                        <select class="custom-select" id="inputGroupSelect01">
+                                                <option value="" selected>Gamesize</option>
+                                                <option value="4x4">4x4</option>
+                                                <option value="4x5">4x5</option>
+                                                <option value="6x6">6x6</option>
+                                        </select>
+                                </div>
+                        </form>
+                        <div id="warning" hidden="true" class="bg-danger">Please fill in all fields!</div>
+                        <button class="btn btn-primary" id="btn_login">Submit</button>
+                </div>
+
+                <!-- Init -->
+                <div id="init" hidden="true">
+                        <div id="table"></div>
+                        <div id="ready">
+                                <p>Click ready to start the game</p>
+                                <button class="btn btn-primary" id="btn_init">Ready</button>
+                        </div>
+
+                </div>
+
+                <!-- Game -->
+                <div id="game" hidden="true">
+                        <p id="playingplayer"></p>
+                </div>
+        </div>
+
+</body>
+
+</html>
