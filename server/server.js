@@ -2,16 +2,22 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 var express = require("express");
 var bodyParser = require("body-parser");
-var classes = require("./classes");
 var fs = require("fs");
 var path = require("path");
+var memory = require("./memory");
 var PORT = 4200;
 var app = express();
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 var playerSessionIDs = [];
-var allPictureURLS = [];
 var games = [];
+var allPictureURLS = [];
+fs.readdir('./pictures', function (err, items) {
+    for (var i = 0; i < items.length; i++) {
+        if (items[i] != 'memory.jpg')
+            allPictureURLS.push('/' + items[i]);
+    }
+});
 var createSessionID = function () {
     var sessionID = playerSessionIDs.length;
     playerSessionIDs.push(sessionID);
@@ -23,50 +29,27 @@ var findgame = function (sessionID) {
         if (game.sessions.indexOf(sessionID) !== -1)
             return game;
     }
+    return null;
 };
-var getSessionID = function (playerName) {
-    for (var _i = 0, games_2 = games; _i < games_2.length; _i++) {
-        var game = games_2[_i];
-        for (var _a = 0, _b = game.playerData; _a < _b.length; _a++) {
-            var data = _b[_a];
-            if (data.name === playerName)
-                return data.id;
-        }
-    }
-    return -1;
-};
-var picturePath = './pictures';
-fs.readdir(picturePath, function (err, items) {
-    for (var i = 0; i < items.length; i++) {
-        if (items[i] != 'memory.jpg')
-            allPictureURLS.push('/' + items[i]);
-    }
-});
 app.get('/', function (req, res) {
     res.sendFile(path.join(__dirname, '../client', 'index.html'));
 });
 app.post('/connect', function (req, res) {
     console.log('POST -> connect/');
-    var data = req.body;
-    for (var _i = 0, games_3 = games; _i < games_3.length; _i++) {
-        var game_1 = games_3[_i];
-        if (game_1.name === data.sessionName) {
-            var sessionID_1 = createSessionID();
-            game_1.playerData.push(new classes.PlayerData(sessionID_1, data.playerName));
-            game_1.sessions.push(sessionID_1);
-            game_1.connected.push(0);
-            res.json({ sessionID: sessionID_1 });
+    var sessionID = createSessionID();
+    for (var _i = 0, games_2 = games; _i < games_2.length; _i++) {
+        var game = games_2[_i];
+        if (game.name === req.body.sessionName) {
+            game.addPlayer(sessionID, req.body.playerName);
+            res.json({ sessionID: sessionID });
             return;
         }
     }
-    var game = new classes.Game(data.size);
-    game.name = data.sessionName;
-    var sessionID = createSessionID();
-    game.playerData.push(new classes.PlayerData(sessionID, data.playerName));
-    game.addPictures((game.data.size.height * game.data.size.width) / 2, allPictureURLS);
-    game.sessions.push(sessionID);
-    game.connected.push(0);
-    games.push(game);
+    if (req.body.type === 'memory') {
+        var game = new memory.Memory(req.body.size, req.body.sessionName, allPictureURLS);
+        game.addPlayer(sessionID, req.body.playerName);
+        games.push(game);
+    }
     res.json({ sessionID: sessionID });
 });
 app.param('id', function (req, res, next, val) {
@@ -76,47 +59,29 @@ app.param('id', function (req, res, next, val) {
 });
 app.get('/connected/:id', function (req, res, next) {
     var game = req.game;
-    game.connected[game.sessions.indexOf(req.session)]++;
-    var max = 0;
-    for (var i = 0; i < game.connected.length; i++)
-        if (max < game.connected[i])
-            max = game.connected[i];
-    for (var i = 0; i < game.connected.length; i++)
-        if (game.connected[i] - max > 8)
-            game.deletePlayer(i);
+    game.checkOnlineTime(req.session);
+    res.json({ connectedPlayers: game.getAllPlayerNames() });
     next();
-    res.json({ connectedPlayers: game.sessions });
 });
 app.get('/init/:id', function (req, res, next) {
-    console.log('GET -> init/' + req.session);
+    console.log('GET  -> init/' + req.session);
     var game = req.game;
-    game.joinedSessions.push(req.session);
-    if (game.joinedSessions.length == game.sessions.length) {
-        game.currentPlayer = game.sessions[0];
-        game.currentIndex = 0;
-    }
+    game.joinGame(req.session);
     res.json({ connectedPlayers: game.sessions, data: game.data });
     next();
 });
 app.get('/game/:id', function (req, res, next) {
     var game = req.game;
-    game.connected[game.sessions.indexOf(req.session)]++;
-    var max = 0;
-    for (var i = 0; i < game.connected.length; i++)
-        if (max < game.connected[i])
-            max = game.connected[i];
-    for (var i = 0; i < game.connected.length; i++)
-        if (game.connected[i] - max > 8)
-            game.deletePlayer(i);
-    res.json({ data: game.data, points: game.getPlayerPoints(), currentPlayer: game.currentPlayer, won: game.won, playingPlayer: game.getPlayerName(game.currentPlayer) });
+    game.checkOnlineTime(req.session);
+    res.json({ data: game.data, points: game.getAllPlayerPoints(), currentPlayer: game.currentPlayer, won: game.won, playingPlayer: game.getPlayerName(game.currentPlayer) });
     next();
 });
 app.post('/turn/:id', function (req, res, next) {
     var index = req.body.index;
-    console.log('POST -> turn/' + req.session + '/' + index);
+    console.log('POST -> turn/' + req.session + ' on field ' + index);
     var game = req.game;
     game.makeTurn(req.session, index);
-    res.json({ data: game.data, points: game.getPlayerPoints(), currentPlayer: game.currentPlayer, won: game.won });
+    res.json({ data: game.data, points: game.getAllPlayerPoints(), currentPlayer: game.currentPlayer, won: game.won });
     next();
 });
 app.use(express.static('pictures'));
@@ -124,4 +89,4 @@ app.use(express.static('client'));
 app.listen(PORT, function () {
     console.log("App is running at http://localhost:" + PORT);
 });
-//# sourceMappingURL=server.js.map
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoic2VydmVyLmpzIiwic291cmNlUm9vdCI6IiIsInNvdXJjZXMiOlsic2VydmVyLnRzIl0sIm5hbWVzIjpbXSwibWFwcGluZ3MiOiI7O0FBQUEsaUNBQW1DO0FBQ25DLHdDQUEwQztBQUUxQyx1QkFBeUI7QUFDekIsMkJBQTZCO0FBRzdCLGlDQUFtQztBQUVuQyxJQUFNLElBQUksR0FBRyxJQUFJLENBQUM7QUFDbEIsSUFBTSxHQUFHLEdBQUcsT0FBTyxFQUFFLENBQUM7QUFDdEIsR0FBRyxDQUFDLEdBQUcsQ0FBQyxVQUFVLENBQUMsSUFBSSxFQUFFLENBQUMsQ0FBQztBQUMzQixHQUFHLENBQUMsR0FBRyxDQUFDLFVBQVUsQ0FBQyxVQUFVLENBQUMsRUFBRSxRQUFRLEVBQUUsSUFBSSxFQUFFLENBQUMsQ0FBQyxDQUFDO0FBRW5ELElBQUksZ0JBQWdCLEdBQWEsRUFBRSxDQUFDO0FBRXBDLElBQUksS0FBSyxHQUFtQixFQUFFLENBQUM7QUFFL0IsSUFBTSxjQUFjLEdBQUcsRUFBRSxDQUFDO0FBQzFCLEVBQUUsQ0FBQyxPQUFPLENBQUMsWUFBWSxFQUFFLFVBQVUsR0FBRyxFQUFFLEtBQUs7SUFDekMsR0FBRyxDQUFDLENBQUMsSUFBSSxDQUFDLEdBQUcsQ0FBQyxFQUFFLENBQUMsR0FBRyxLQUFLLENBQUMsTUFBTSxFQUFFLENBQUMsRUFBRSxFQUFFLENBQUM7UUFDcEMsRUFBRSxDQUFDLENBQUMsS0FBSyxDQUFDLENBQUMsQ0FBQyxJQUFJLFlBQVksQ0FBQztZQUN6QixjQUFjLENBQUMsSUFBSSxDQUFDLEdBQUcsR0FBRyxLQUFLLENBQUMsQ0FBQyxDQUFDLENBQUMsQ0FBQztJQUM1QyxDQUFDO0FBQ0wsQ0FBQyxDQUFDLENBQUM7QUFFSCxJQUFJLGVBQWUsR0FBRztJQUNsQixJQUFJLFNBQVMsR0FBRyxnQkFBZ0IsQ0FBQyxNQUFNLENBQUM7SUFDeEMsZ0JBQWdCLENBQUMsSUFBSSxDQUFDLFNBQVMsQ0FBQyxDQUFDO0lBQ2pDLE1BQU0sQ0FBQyxTQUFTLENB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

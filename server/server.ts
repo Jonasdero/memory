@@ -1,9 +1,11 @@
 import * as express from 'express';
 import * as bodyParser from 'body-parser';
 import { Router, Request, Response } from 'express';
-import * as classes from './classes';
 import * as fs from 'fs';
 import * as path from 'path';
+
+import * as classes from './classes';
+import * as memory from './memory';
 
 const PORT = 4200;
 const app = express();
@@ -11,8 +13,16 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
 var playerSessionIDs: number[] = [];
-var allPictureURLS: string[] = [];
+
 var games: classes.Game[] = [];
+
+const allPictureURLS = [];
+fs.readdir('./pictures', function (err, items) {
+    for (var i = 0; i < items.length; i++) {
+        if (items[i] != 'memory.jpg')
+            allPictureURLS.push('/' + items[i]);
+    }
+});
 
 var createSessionID = function (): number {
     let sessionID = playerSessionIDs.length;
@@ -21,31 +31,10 @@ var createSessionID = function (): number {
 }
 
 var findgame = function (sessionID: number): classes.Game {
-    for (let game of games) {
-        // console.log(game.sessions);
-        // console.log(sessionID);
-        // console.log(typeof(sessionID));
-        // console.log(typeof(game.sessions[0]));
-        if (game.sessions.indexOf(sessionID) !== -1) return game;
-    }
-}
-
-var getSessionID = function (playerName: string) {
     for (let game of games)
-        for (let data of game.playerData)
-            if (data.name === playerName) return data.id;
-    return -1;
+        if (game.sessions.indexOf(sessionID) !== -1) return game;
+    return null;
 }
-
-const picturePath = './pictures'
-fs.readdir(picturePath, function (err, items) {
-    for (var i = 0; i < items.length; i++) {
-        if (items[i] != 'memory.jpg')
-            allPictureURLS.push('/' + items[i]);
-    }
-    // console.log(allPictureURLS);
-});
-
 
 // GET -> /
 // Get HTML site
@@ -58,25 +47,19 @@ app.get('/', (req: Request, res: Response) => {
 // returns sessionID
 app.post('/connect', (req: Request, res: Response) => {
     console.log('POST -> connect/');
-    let data = req.body;
+    let sessionID = createSessionID();
     for (let game of games) {
-        if (game.name === data.sessionName) {
-            let sessionID = createSessionID();
-            game.playerData.push(new classes.PlayerData(sessionID, data.playerName));
-            game.sessions.push(sessionID);
-            game.connected.push(0);
+        if (game.name === req.body.sessionName) {
+            game.addPlayer(sessionID, req.body.playerName);
             res.json({ sessionID: sessionID });
             return;
         }
     }
-    let game = new classes.Game(data.size);
-    game.name = data.sessionName;
-    let sessionID = createSessionID();
-    game.playerData.push(new classes.PlayerData(sessionID, data.playerName));
-    game.addPictures((game.data.size.height * game.data.size.width) / 2, allPictureURLS);
-    game.sessions.push(sessionID);
-    game.connected.push(0);
-    games.push(game);
+    if (req.body.type === 'memory') {
+        let game = new memory.Memory(req.body.size, req.body.sessionName, allPictureURLS);
+        game.addPlayer(sessionID, req.body.playerName);
+        games.push(game);
+    }
     res.json({ sessionID: sessionID });
 });
 
@@ -91,33 +74,19 @@ app.param('id', (req, res, next, val) => {
 // Gets connected players from current session
 // returns string array with player names
 app.get('/connected/:id', (req: Request, res: Response, next) => {
-    // console.log('GET -> connected/' + req.session);
     let game: classes.Game = req.game;
-    game.connected[game.sessions.indexOf(req.session)]++;
-
-    let max = 0;
-    for (let i = 0; i < game.connected.length; i++)
-        if (max < game.connected[i]) max = game.connected[i];
-
-    for (let i = 0; i < game.connected.length; i++)
-        if (game.connected[i] - max > 8)
-            game.deletePlayer(i);
-
+    game.checkOnlineTime(req.session);
+    res.json({ connectedPlayers: game.getAllPlayerNames() });
     next();
-    res.json({ connectedPlayers: game.sessions });
 });
 
 // GET -> /init
 // Initialises the game
 // returns pictureUrls, connectedPlayers, field
 app.get('/init/:id', (req: Request, res: Response, next) => {
-    console.log('GET -> init/' + req.session);
+    console.log('GET  -> init/' + req.session);
     let game: classes.Game = req.game;
-    game.joinedSessions.push(req.session);
-    if (game.joinedSessions.length == game.sessions.length) {
-        game.currentPlayer = game.sessions[0];
-        game.currentIndex = 0;
-    }
+    game.joinGame(req.session);
     res.json({ connectedPlayers: game.sessions, data: game.data });
     next();
 })
@@ -126,19 +95,9 @@ app.get('/init/:id', (req: Request, res: Response, next) => {
 // Get current game status
 // returns points, field, turn, won
 app.get('/game/:id', (req: Request, res: Response, next) => {
-    // console.log('GET -> game/' + req.session);
     let game: classes.Game = req.game;
-    game.connected[game.sessions.indexOf(req.session)]++;
-    let max = 0;
-
-    for (let i = 0; i < game.connected.length; i++)
-        if (max < game.connected[i]) max = game.connected[i];
-
-    for (let i = 0; i < game.connected.length; i++)
-        if (game.connected[i] - max > 8)
-            game.deletePlayer(i);
-
-    res.json({ data: game.data, points: game.getPlayerPoints(), currentPlayer: game.currentPlayer, won: game.won, playingPlayer: game.getPlayerName(game.currentPlayer) });
+    game.checkOnlineTime(req.session);
+    res.json({ data: game.data, points: game.getAllPlayerPoints(), currentPlayer: game.currentPlayer, won: game.won, playingPlayer: game.getPlayerName(game.currentPlayer) });
     next();
 });
 
@@ -147,10 +106,10 @@ app.get('/game/:id', (req: Request, res: Response, next) => {
 // returns points, field, turn, won
 app.post('/turn/:id', (req: Request, res: Response, next) => {
     let index = req.body.index;
-    console.log('POST -> turn/' + req.session + '/' + index);
+    console.log('POST -> turn/' + req.session + ' on field ' + index);
     let game: classes.Game = req.game;
     game.makeTurn(req.session, index);
-    res.json({ data: game.data, points: game.getPlayerPoints(), currentPlayer: game.currentPlayer, won: game.won });
+    res.json({ data: game.data, points: game.getAllPlayerPoints(), currentPlayer: game.currentPlayer, won: game.won });
     next();
 })
 app.use(express.static('pictures'))

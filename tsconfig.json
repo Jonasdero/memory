@@ -5,7 +5,7 @@
         "target": "es5",
         "module": "commonjs",
         "removeComments": true,
-        "sourceMap": true
+        "inlineSourceMap": true
     },
     "exclude": [
         "node_modules",

@@ -90,8 +90,6 @@ function build() {
     })
     if (currentPlayer !== -1) document.getElementById("playingplayer").innerHTML = playingPlayer + ', it\'s your turn!'
     else document.getElementById("playingplayer").innerHTML = "Waiting";
-    // if (document.getElementById("gametable") !== null)
-    // $("#gametable").remove();
     var differences = [];
     for (let i = 0; i < data.field.length; i++) {
         currentCell = document.getElementById(i);
@@ -102,8 +100,8 @@ function build() {
     oldfield = data.field;
 
     if (won !== -1) {
-        var index;
-        for (var i = 1; i < points.length; i++) { index = 0; if (points[i] > points[i - 1]) index = i; }
+        var index = 0;
+        for (var i = 1; i < points.length; i++) { if (points[i] > points[i - 1]) index = i; }
         clearInterval(interval);
         alert(playernames[index] + " hat gewonnen");
     }
@@ -125,13 +123,13 @@ $(document).ready(function () {
         if ($("#SName").val() != "" && $("#Session").val() != "" && $("#inputGroupSelect01").val() != "") {
             var name = $("#SName").val();
             var session = $("#Session").val();
-            data.size.width = parseInt($("#inputGroupSelect01").val().split('x')[0]);
-            data.size.height = parseInt($("#inputGroupSelect01").val().split('x')[1]);
+            data.size.width = +$("#inputGroupSelect01").val().split('x')[0];
+            data.size.height = +$("#inputGroupSelect01").val().split('x')[1];
 
             $("#login").hide();
             $("#init").show();
             $.post("/connect",
-                { "sessionName": session, "playerName": name, "size": { "width": data.size.width, "height": data.size.height } },
+                { "sessionName": session, "playerName": name, "size": { "width": +data.size.width, "height": +data.size.height }, "type": "memory" },
                 function (result) {
                     sessionID = result.sessionID;
                     interval = setInterval(getConnectedPlayers, 300);

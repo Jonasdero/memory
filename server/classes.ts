@@ -1,122 +1,91 @@
-export class Game {
+export abstract class Game {
     name: string;
     playerData: PlayerData[] = [];
     turn: number;
     won: number;
-    nextPlayer: number;
     currentPlayer: number;
-    currentIndex: number;
+    nextPlayer: number;
     sessions: number[] = [];
     joinedSessions: number[] = [];
-    connected: number[] = [];
+    connectCount: number[] = [];
+    data: {};
 
-    data = {
-        size: { width: 0, height: 0 },
-        cardOrder: [],
-        field: [],
-        pictureUrls: [],
-        turnedCards: [],
-        turnedIndexes: [],
-        foundPairs: [],
-    }
 
-    constructor(size) {
-        this.data.size.width = +size.width;
-        this.data.size.height = +size.height;
+    constructor(name) {
         this.turn = 0;
         this.currentPlayer = -1;
         this.won = -1;
-        for (let i = 0; i < this.data.size.width * this.data.size.height / 2; i++) {
-            this.data.cardOrder.push(i);
-            this.data.cardOrder.push(i);
-            this.data.field.push(0);
-            this.data.field.push(0);
-        }
-        var newCardOrder: number[] = [];
-        while (this.data.cardOrder.length > 0) {
-            newCardOrder.push(this.data.cardOrder.splice(Math.random() * this.data.cardOrder.length, 1)[0]);
-        }
-        this.data.cardOrder = newCardOrder;
+        this.name = name;
     }
 
-    getPlayers(): string[] {
+    // Get all player names
+    getAllPlayerNames(): string[] {
         let players = [];
-        for (let data of this.playerData)
-            players.push(data.name);
+        for (let data of this.playerData) players.push(data.name);
         return players;
     }
 
-    getPlayerPoints(): number[] {
+    // Get all player points
+    getAllPlayerPoints(): number[] {
         let points = [];
-        for (let data of this.playerData)
-            points.push(data.points);
+        for (let data of this.playerData) points.push(data.points);
         return points;
     }
 
+    // Get the index of a certain player
     getPlayerIndex(sessionID: number): number {
         for (let i = 0; i < this.playerData.length; i++)
             if (this.playerData[i].id === sessionID) return i;
         return -1;
     }
+
+    // Get the name of a certain player
     getPlayerName(sessionID: number): string {
         for (let data of this.playerData)
             if (data.id === sessionID) return data.name;
         return "Waiting";
     }
-    waitAndTurnCards() {
-        setTimeout(() => {
-            this.currentPlayer = this.nextPlayer;
-            for (let index of this.data.turnedIndexes)
-                this.data.field[index] = 0;
-            this.data.turnedIndexes = [];
-            this.data.turnedCards = [];
-        }, 300)
+
+    addPlayer(sessionID: number, name: string) {
+        this.playerData.push(new PlayerData(sessionID, name));
+        this.sessions.push(sessionID);
+        this.connectCount.push(0);
     }
-    deletePlayer(index: number) {
+
+    removePlayer(index: number) {
         if (this.currentPlayer == this.sessions[index]) {
-            this.currentIndex++;
-            if (this.currentIndex == this.sessions.length) this.currentIndex = 0;
-            this.currentPlayer = this.sessions[this.currentIndex];
+            var i = this.sessions.indexOf(this.currentPlayer);
+            if (i === this.sessions.length) i = 0;
+            this.currentPlayer = this.sessions[i];
         }
         this.playerData.splice(index, 1);
         this.joinedSessions.splice(index, 1);
         this.sessions.splice(index, 1);
-        this.connected.splice(index, 1);
+        this.connectCount.splice(index, 1);
     }
-    makeTurn(sessionID: number, index: number) {
-        this.turn++;
-        this.data.turnedCards.push(this.data.cardOrder[index]);
-        this.data.turnedIndexes.push(index);
-        this.data.field[index] = this.data.cardOrder[index];
-        if (this.turn === 2) {
-            this.turn = 0;
-            if (this.data.turnedCards[0] === this.data.turnedCards[1]) {
-                this.data.foundPairs.push(this.data.turnedCards[0]);
-                this.data.turnedCards = [];
-                this.data.turnedIndexes = [];
-                this.playerData[this.getPlayerIndex(sessionID)].points++;
-                if (this.data.foundPairs.length == (this.data.size.height * this.data.size.width) / 2) this.won = 1;
-            } else {
-                this.currentIndex++;
-                if (this.currentIndex == this.sessions.length) this.currentIndex = 0;
-                this.nextPlayer = this.sessions[this.currentIndex];
-                this.currentPlayer = -1;
-                this.waitAndTurnCards();
-            }
+
+    abstract makeTurn(sessionID: number, index: number)
+
+    // Player is in lobby and wants to start the game
+    joinGame(sessionID: number) {
+        this.joinedSessions.push(sessionID);
+
+        if (this.joinedSessions.length == this.sessions.length) {
+            this.currentPlayer = this.sessions[0];
         }
     }
 
-    addPictures(count: number, pictures: string[]) {
-        this.data.pictureUrls.push('/memory.jpg')
-        let taken = [];
-        while (count > 0) {
-            var index = Math.floor(Math.random() * (pictures.length - 1));
-            if (taken.indexOf(index) != -1)
-                continue;
-            taken.push(index);
-            this.data.pictureUrls.push(pictures[index]);
-            count--;
-        }
+    // Check if other players are offline / exited the game
+    checkOnlineTime(sessionID: number) {
+        this.connectCount[this.sessions.indexOf(sessionID)]++;
+        let max = 0;
+        for (let i = 0; i < this.connectCount.length; i++)
+            if (max < this.connectCount[i]) max = this.connectCount[i];
+
+        // If other players didnt requested something for 8 cycles they are removed from the game
+        for (let i = 0; i < this.connectCount.length; i++)
+            if (this.connectCount[i] - max > 8)
+                this.removePlayer(i);
     }
 }
 
