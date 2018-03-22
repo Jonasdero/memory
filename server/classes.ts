@@ -56,7 +56,7 @@ export abstract class Game {
     // Remove the player from the game (for example when he exits the game)
     removePlayer(index: number) {
         if (this.currentPlayer == this.sessions[index]) {
-            var i = this.sessions.indexOf(this.currentPlayer);
+            var i = this.sessions.indexOf(this.currentPlayer) + 1;
             if (i === this.sessions.length) i = 0;
             this.currentPlayer = this.sessions[i];
         }

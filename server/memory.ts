@@ -72,7 +72,7 @@ export class Memory extends classes.Game {
                     this.won = 1;
             } else {
                 // Save next Player in Class
-                var i = this.sessions.indexOf(this.currentPlayer);
+                var i = this.sessions.indexOf(this.currentPlayer)+1;
                 if (i === this.sessions.length) i = 0;
                 this.nextPlayer = this.sessions[i];
                 this.currentPlayer = -1;
