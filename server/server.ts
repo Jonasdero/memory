@@ -94,7 +94,7 @@ app.get('/init/:id', (req: Request, res: Response, next) => {
 
 // GET -> /game
 // Get current game status
-// Returns data, points, turn, won
+// Returns data, points, turn, won, playingPlayer
 app.get('/game/:id', (req: Request, res: Response, next) => {
     console.log('GET  -> game/' + req.session);
     let game: classes.Game = req.game;
@@ -105,7 +105,7 @@ app.get('/game/:id', (req: Request, res: Response, next) => {
 
 // POST -> /turn
 // Posts index
-// Returns points, field, turn, won
+// Returns data, points, turn, won, playingPlayer
 app.post('/turn/:id', (req: Request, res: Response, next) => {
     let index = req.body.index;
     console.log('POST -> turn/' + req.session + ' on field ' + index);
