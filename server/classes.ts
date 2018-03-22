@@ -46,12 +46,14 @@ export abstract class Game {
         return "Waiting";
     }
 
+    // Add a player to the game
     addPlayer(sessionID: number, name: string) {
         this.playerData.push(new PlayerData(sessionID, name));
         this.sessions.push(sessionID);
         this.connectCount.push(0);
     }
 
+    // Remove the player from the game (for example when he exits the game)
     removePlayer(index: number) {
         if (this.currentPlayer == this.sessions[index]) {
             var i = this.sessions.indexOf(this.currentPlayer);
@@ -93,6 +95,7 @@ export class PlayerData {
     id: number;
     name: string;
     points: number;
+
     constructor(id: number, name: string) {
         this.id = id;
         this.name = name;
