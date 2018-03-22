@@ -79,6 +79,7 @@ export abstract class Game {
 
     // Check if other players are offline / exited the game
     checkOnlineTime(sessionID: number) {
+        if (this.sessions.length < 3) return;
         this.connectCount[this.sessions.indexOf(sessionID)]++;
         let max = 0;
         for (let i = 0; i < this.connectCount.length; i++)

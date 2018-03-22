@@ -46,7 +46,7 @@ export class Memory extends classes.Game {
                 this.data.field[index] = 0;
             this.data.turnedIndexes = [];
             this.data.turnedCards = [];
-        }, 300)
+        }, 1000)
     }
 
     makeTurn(sessionID: number, index: number) {
