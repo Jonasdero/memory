@@ -1,3 +1,5 @@
+import { PlayerData } from './playerdata';
+
 export abstract class Game {
     name: string;
     playerData: PlayerData[] = [];
@@ -9,7 +11,7 @@ export abstract class Game {
     joinedSessions: number[] = [];
     connectCount: number[] = [];
     data: {};
-
+    gameID: number = -1;
 
     constructor(name) {
         this.turn = 0;
@@ -72,34 +74,27 @@ export abstract class Game {
     joinGame(sessionID: number) {
         this.joinedSessions.push(sessionID);
 
-        if (this.joinedSessions.length == this.sessions.length) {
+        if (this.joinedSessions.length == this.sessions.length)
             this.currentPlayer = this.sessions[0];
-        }
     }
 
     // Check if other players are offline / exited the game
     checkOnlineTime(sessionID: number) {
-        if (this.sessions.length < 3) return;
+        if (this.sessions.length < 2) return;
         this.connectCount[this.sessions.indexOf(sessionID)]++;
         let max = 0;
-        for (let i = 0; i < this.connectCount.length; i++)
+        let min = 100000;
+        for (let i = 0; i < this.connectCount.length; i++) {
+            if (min > this.connectCount[i]) min = this.connectCount[i];
             if (max < this.connectCount[i]) max = this.connectCount[i];
+        }
 
         // If other players didnt requested something for 8 cycles they are removed from the game
         for (let i = 0; i < this.connectCount.length; i++)
-            if (this.connectCount[i] - max > 8)
+            if (max - this.connectCount[i] >= 10)
                 this.removePlayer(i);
-    }
-}
 
-export class PlayerData {
-    id: number;
-    name: string;
-    points: number;
-
-    constructor(id: number, name: string) {
-        this.id = id;
-        this.name = name;
-        this.points = 0;
+        for (let i = 0; i < this.connectCount.length; i++)
+            this.connectCount[i] = this.connectCount[i] - min;
     }
 }

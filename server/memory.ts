@@ -1,7 +1,7 @@
-import * as classes from './classes';
+import { Game } from './game';
 import * as fs from 'fs';
 
-export class Memory extends classes.Game {
+export class Memory extends Game {
     data = {
         size: { width: 0, height: 0 },
         cardOrder: [],      // Order in that the pairs are on the field
@@ -20,10 +20,8 @@ export class Memory extends classes.Game {
 
         // Fill cardOrder [1,1,2,2,3,3,4,4,...] and field [0,0,0,0,0,...]
         for (let i = 1; i <= gameSize / 2; i++) {
-            this.data.cardOrder.push(i);
-            this.data.cardOrder.push(i);
-            this.data.field.push(0);
-            this.data.field.push(0);
+            this.data.cardOrder.push(i, i);
+            this.data.field.push(0, 0);
         }
         // Randomize cardOrder
         for (let i = 0; i < this.data.cardOrder.length; i++) {
@@ -33,7 +31,16 @@ export class Memory extends classes.Game {
             this.data.cardOrder[i] = temp;
         }
         // Add pictures
-        this.addPictures(gameSize / 2, allPictureUrls)
+        this.data.pictureUrls.push('/memory.jpg');
+        var count = gameSize / 2;
+        while (count > 0) {
+            if (count >= allPictureUrls.length) throw ('Not enough pictures');
+            var index = Math.floor(Math.random() * (allPictureUrls.length - 1));
+            var name = '/' + allPictureUrls[index];
+            if (this.data.pictureUrls.indexOf(name) != -1) continue;
+            this.data.pictureUrls.push(name);
+            count--;
+        }
     }
 
     waitAndTurnCards() {
@@ -72,25 +79,12 @@ export class Memory extends classes.Game {
                     this.won = 1;
             } else {
                 // Save next Player in Class
-                var i = this.sessions.indexOf(this.currentPlayer)+1;
+                var i = this.sessions.indexOf(this.currentPlayer) + 1;
                 if (i === this.sessions.length) i = 0;
                 this.nextPlayer = this.sessions[i];
                 this.currentPlayer = -1;
                 this.waitAndTurnCards();
             }
-        }
-    }
-
-    addPictures(count: number, allPictureUrls: string[]) {
-        // Take random pictures out of this list
-        this.data.pictureUrls.push('/memory.jpg');
-        while (count > 0) {
-            if (count >= allPictureUrls.length) throw ('Not enough pictures');
-            var index = Math.floor(Math.random() * (allPictureUrls.length - 1));
-            var name = '/' + allPictureUrls[index];
-            if (this.data.pictureUrls.indexOf(name) != -1) continue;
-            this.data.pictureUrls.push(name);
-            count--;
         }
     }
 }

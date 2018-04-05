@@ -19,30 +19,30 @@ POST-Request to post initial player and game data
 ###### Contains:
 *sessionName*, *size*, *playerName*
 ###### Returns:
-*sessionID*
+*gameID*, *sessionID*
 
-### GET /**connected**/sessionID
+### GET /**connected**/gameID/sessionID
 ###### Description:
 GET-Request to get the names of all connected player names in the current game session
 ###### Returns:
 *connectedPlayers*
 
-### GET /**init**/sessionID
+### GET /**init**/gameID/sessionID
 ###### Description:
 GET-Request to get the names of all connected player names in the current game session and the data needed to initialize the game
 ###### Returns:
 *connectedPlayers*, *data*
 
-### GET /**game**/sessionID
+### GET /**game**/gameID/sessionID
 ###### Description:
 GET-Request to get updates to game data, points, etc.
 ###### Returns:
-*data*, *points*, *turn*, *won*, *playingPlayer*
+*data*, *connectedPlayers*, *points*, *turn*, *won*, *playingPlayer*
 
-### POST /**turn**/sessionID
+### POST /**turn**/gameID/sessionID
 ###### Description:
 POST-Request to make a turn on the posted field index, returns updates to game data, points, etc.
 ###### Contains:
 *index*
 ###### Returns:
-*data*, *points*, *turn*, *won*
+*data*, *connectedPlayers*, *points*, *turn*
