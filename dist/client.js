@@ -1,15 +1,14 @@
 var data = { field: [], pictureUrls: [], size: { width: 0, height: 0 } };
-var won = -1; // SessionID of player who won the game
-var players = []; // Names of all players
-var sessionID = -1; // SessionID of client
-var currentPlayer = -1; // Current playing SessionID
-var playingPlayer = ""; // Current name of playing player
-var points = []; // Points of all players
-var oldfield = []; // Old field to see where are the differences
-var clicked = false; // Boolean if any field has been clicked
-var interval = null; // Current function that will be called
-var p = {};
-var gameID = -1;
+var won = -1;               // SessionID of player who won the game
+var players = [];           // Names of all players
+var sessionID = -1;         // SessionID of client
+var currentPlayer = -1;     // Current playing SessionID
+var playingPlayer = "";     // Current name of playing player
+var points = [];            // Points of all players
+var oldfield = [];          // Old field to see where are the differences
+var clicked = false;        // Boolean if any field has been clicked
+var interval = null;        // Current function that will be called
+var gameID = -1;            //  ID of the current game
 
 $(document).ready(function () { // The functions below are only available if the document is fully loaded
     // Adding a clickevent to the login button
@@ -167,9 +166,8 @@ function createMemoryGameGrid() {
                 $.post("/turn/" + gameID + "/" + sessionID, { "index": customIndex },
                     function (result) {
                         if (!result) { clearInterval(interval); return; }
-                        p = result; clicked = false;
                         data.field = result.data.field;
-                        points = result.points;
+                        points = result.points; clicked = false;
                         checkPlayerCount(result.connectedPlayers);
                     }
                 );

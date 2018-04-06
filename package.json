@@ -13,8 +13,8 @@
   },
   "scripts": {
     "prestart": "tsc",
-    "start": "node server/server.js",
-    "test": "node server/server.js"
+    "start": "node src/server/server.js",
+    "test": "node src/server/server.js"
   },
   "repository": {
     "type": "git",

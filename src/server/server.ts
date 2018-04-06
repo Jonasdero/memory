@@ -39,7 +39,7 @@ var findgame = function (sessionID: number): Game {
 // GET -> /
 // Get HTML site
 app.get('/', (req: Request, res: Response) => {
-    res.sendFile(path.join(__dirname, '../client', 'index.html'));
+    res.sendFile(path.join(__dirname, '../../dist', 'index.html'));
 });
 
 // POST -> /connect
