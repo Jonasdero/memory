@@ -4,8 +4,8 @@
   "description": "Memory with NodeJS and JQuery",
   "main": "index.js",
   "dependencies": {
-    "body-parser": "^1.20.1",
-    "express": "^4.19.2",
+    "body-parser": "^1.20.3",
+    "express": "^4.21.0",
     "typescript": "^2.7.2"
   },
   "devDependencies": {
