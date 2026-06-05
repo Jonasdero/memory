@@ -10,6 +10,12 @@ var clicked = false;        // Boolean if any field has been clicked
 var interval = null;        // Current function that will be called
 var gameID = -1;            //  ID of the current game
 
+// Build the <img> markup for a card. `animate` adds the flip-in animation.
+function cardImage(pictureIndex, animate) {
+    return '<img class="card-img' + (animate ? ' flip' : '') +
+        '" src="' + data.pictureUrls[pictureIndex] + '" alt="card" draggable="false"/>';
+}
+
 $(document).ready(function () { // The functions below are only available if the document is fully loaded
     // Adding a clickevent to the login button
     $("#btn_login").click(function () {
@@ -76,55 +82,48 @@ function getConnectedPlayers() {
     );
 }
 
+// Build a row for the player points table
+function buildPlayerRow(i) {
+    var row = document.createElement("tr");
+    if (players[i] === playingPlayer) row.className = "active-player";
+
+    var nameCell = document.createElement("td");
+    nameCell.appendChild(document.createTextNode((i + 1) + ". " + players[i]));
+    row.appendChild(nameCell);
+
+    var pointsCell = document.createElement("td");
+    pointsCell.setAttribute("id", "text" + i);
+    pointsCell.appendChild(document.createTextNode(points[i]));
+    row.appendChild(pointsCell);
+
+    return row;
+}
+
 // Creating the player points table
 function createPlayerPointsTable() {
     if (document.getElementById("playertable") !== null)
         $("#playertable").remove(); // Deleting already existing table
 
-    // Creating table, tablebody and tablehead
     var table = document.createElement("table");
     var mytablehead = document.createElement("thead");
     var tbody = document.createElement("tbody");
 
     // Adding headlines
-    currentRow = document.createElement("tr");
-
-    currentCell = document.createElement("td");
-    currentText = document.createTextNode("Players");
-    currentCell.appendChild(currentText);
-    currentRow.appendChild(currentCell);
-
-    currentCell = document.createElement("td");
-    currentText = document.createTextNode("Points");
-    currentCell.appendChild(currentText);
-    currentRow.appendChild(currentCell);
-
-    mytablehead.appendChild(currentRow);
-
+    var headRow = document.createElement("tr");
+    var headPlayers = document.createElement("td");
+    headPlayers.appendChild(document.createTextNode("Players"));
+    headRow.appendChild(headPlayers);
+    var headPoints = document.createElement("td");
+    headPoints.appendChild(document.createTextNode("Points"));
+    headRow.appendChild(headPoints);
+    mytablehead.appendChild(headRow);
 
     // Adding the players and points to the tablebody
-    for (let i = 0; players.length > i; i++) {
-        currentRow = document.createElement("tr");
+    for (let i = 0; players.length > i; i++) tbody.appendChild(buildPlayerRow(i));
 
-        currentCell = document.createElement("td");
-        currentText = document.createTextNode(i + 1 + ". " + players[i]);
-        currentCell.appendChild(currentText);
-        currentRow.appendChild(currentCell);
-
-        currentCell = document.createElement("td");
-        currentText = document.createTextNode(points[i]);
-        currentCell.setAttribute("id", "text" + i);
-        currentCell.appendChild(currentText);
-
-        currentRow.appendChild(currentCell);
-        tbody.appendChild(currentRow);
-    }
-
-    // Adding the tablebody and the tablehead to the table
     table.appendChild(mytablehead);
     table.appendChild(tbody);
 
-    table.setAttribute("class", "table"); // Setting class to table for Bootstrap design
     table.setAttribute("id", "playertable"); // Setting id to "playertable" to make it chooseable for deleting when creating new table
 
     // Adding table to html
@@ -133,10 +132,8 @@ function createPlayerPointsTable() {
 
 // Creating memory game grid
 function createMemoryGameGrid() {
-
-    // Creating table and tablebody
-    node = document.getElementById("game");
     var myTable = document.createElement("table");
+    myTable.setAttribute("id", "board");
     var mytablebody = document.createElement("tbody");
 
     for (var i = 0; i < data.size.height; i++) {
@@ -151,7 +148,7 @@ function createMemoryGameGrid() {
             currentCell.setAttribute("id", (i * data.size.width) + j);
 
             // Adding the image by imagesource given by the server to the cell
-            currentCell.innerHTML = '<img src="' + window.location.href + '' + data.pictureUrls[data.field[(i * data.size.width) + j]] + '" height ="150em" width = "150em" style="margin: 0.5em 0.5em 0.5em 0.5em;"/>';
+            currentCell.innerHTML = cardImage(data.field[(i * data.size.width) + j], false);
 
             // Adding a clickevent to the cell if the player has a turn
             currentCell.addEventListener("click", function () {
@@ -183,8 +180,7 @@ function createMemoryGameGrid() {
     myTable.appendChild(mytablebody);
 
     // Adding the table to the html document
-    node = document.getElementById("table");
-    node.appendChild(myTable);
+    document.getElementById("table").appendChild(myTable);
 }
 
 // Updating the player points table
@@ -193,24 +189,9 @@ function updatePlayerPointsTable() {
     tbody.innerHTML = "";
 
     // Adding the players and points to the tablebody
-    for (let i = 0; players.length > i; i++) {
-        currentRow = document.createElement("tr");
-
-        currentCell = document.createElement("td");
-        currentText = document.createTextNode(i + 1 + ". " + players[i]);
-        currentCell.appendChild(currentText);
-        currentRow.appendChild(currentCell);
-
-        currentCell = document.createElement("td");
-        currentText = document.createTextNode(points[i]);
-        currentCell.setAttribute("id", "text" + i);
-        currentCell.appendChild(currentText);
-
-        currentRow.appendChild(currentCell);
-        tbody.appendChild(currentRow);
-    }
-
+    for (let i = 0; players.length > i; i++) tbody.appendChild(buildPlayerRow(i));
 }
+
 // Updating the game
 function updateGame() {
     // Get the game field, points, currentPlayer, won, playinPlayer
@@ -223,33 +204,33 @@ function updateGame() {
         playingPlayer = result.playingPlayer; points = result.points;
         checkPlayerCount(result.connectedPlayers);
 
-        for (let i = 0; i < players.length; i++)
-            document.getElementById("text" + i).innerText = points[i];
+        updatePlayerPointsTable();
     })
 
     // Showing the players who has a turn
-    if (currentPlayer !== -1)
-        document.getElementById("playingplayer").innerHTML = playingPlayer + ', it\'s your turn!';
-
+    if (currentPlayer === sessionID)
+        document.getElementById("playingplayer").innerHTML = "🎯 It's your turn!";
+    else if (currentPlayer !== -1)
+        document.getElementById("playingplayer").innerHTML = "⏳ " + playingPlayer + "'s turn";
     else // Show "waiting" if nobody has the turn the players
-        document.getElementById("playingplayer").innerHTML = "Waiting";
+        document.getElementById("playingplayer").innerHTML = "Waiting…";
 
     // Adding the changed images by urls to the cell
     for (let i = 0; i < data.field.length; i++) {
         currentCell = document.getElementById(i);
         if (oldfield[i] != data.field[i]) {
-            // Adding the new images by urls to the cells
-            currentCell.innerHTML = '<img src="' + window.location.href + '' + data.pictureUrls[data.field[i]] + '" height ="150em" width = "150em" style="margin: 0.5em 0.5em 0.5em 0.5em;"/>';
+            // Animate the flip only when a card is being revealed
+            currentCell.innerHTML = cardImage(data.field[i], data.field[i] !== 0);
         }
     }
-    oldfield = data.field; // Setting oldfield to the current field
+    oldfield = data.field.slice(); // Setting oldfield to the current field
 
     // When the game is won (won !== -1) announce the player with the most points
     if (won !== -1) {
         var index = 0;
         for (var i = 1; i < points.length; i++) { if (points[i] > points[index]) index = i; }
         clearInterval(interval);
-        alert(players[index] + " won");
+        alert("🏆 " + players[index] + " won!");
     }
 }
 
