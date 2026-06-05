@@ -1,8 +1,22 @@
-# Memory with NodeJS and JQuery
+# Memory with NodeJS and jQuery
 
 ## Idea
 Implementing a turn based memory game with multiple Clients and custom game size.
 It currently implements an abstract game class, so its easy to implement another turn based board game onto this service.
+
+## Getting Started
+Requirements: Node.js 18 or newer.
+
+```bash
+npm install   # install dependencies
+npm start     # compiles TypeScript (prestart) and starts the server
+```
+
+The server then runs at http://localhost:4200 (override with the `PORT` env variable).
+
+## Tech Stack
+* Backend: Node.js + Express 5 (TypeScript)
+* Frontend: jQuery 3.7 + Bootstrap 5.3
 
 ## API
 The server responds to following API calls.
@@ -37,7 +51,7 @@ GET-Request to get the names of all connected player names in the current game s
 ###### Description:
 GET-Request to get updates to game data, points, etc.
 ###### Returns:
-*data*, *connectedPlayers*, *points*, *turn*, *won*, *playingPlayer*
+*data*, *connectedPlayers*, *points*, *currentPlayer*, *won*, *playingPlayer*
 
 ### POST /**turn**/gameID/sessionID
 ###### Description:
@@ -45,4 +59,4 @@ POST-Request to make a turn on the posted field index, returns updates to game d
 ###### Contains:
 *index*
 ###### Returns:
-*data*, *connectedPlayers*, *points*, *turn*
+*data*, *connectedPlayers*, *points*, *currentPlayer*
