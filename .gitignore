@@ -1,3 +1,6 @@
+# Compiled TypeScript source maps
+*.js.map
+
 # Logs
 logs
 *.log

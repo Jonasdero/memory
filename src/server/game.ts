@@ -13,7 +13,7 @@ export abstract class Game {
     data: {};
     gameID: number = -1;
 
-    constructor(name) {
+    constructor(name: string) {
         this.turn = 0;
         this.currentPlayer = -1;
         this.won = -1;

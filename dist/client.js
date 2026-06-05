@@ -20,8 +20,8 @@ $(document).ready(function () { // The functions below are only available if the
             data.size.width = +$("#inputGroupSelect01").val().split('x')[0];
             data.size.height = +$("#inputGroupSelect01").val().split('x')[1];
 
-            $("#login").hide(); // Hide the login container
-            $("#init").show(); // Show the init container
+            $("#login").addClass("d-none"); // Hide the login container
+            $("#init").removeClass("d-none"); // Show the init container
 
             // Post the sessionname, the playername and the fieldsize to the server
             $.post("/connect",
@@ -38,13 +38,13 @@ $(document).ready(function () { // The functions below are only available if the
                 }
             );
 
-        } else { $("#warning").show(); } // Show a warning if fields are not felt in
+        } else { $("#warning").removeClass("d-none"); } // Show a warning if fields are not filled in
     });
 
     // Adding a clickevent to the init button
     $("#btn_init").click(function () {
-        $("#ready").hide(); // Hide the init button
-        $("#game").show(); // Show the game container
+        $("#ready").addClass("d-none"); // Hide the init button
+        $("#game").removeClass("d-none"); // Show the game container
         clearInterval(interval); // Stop updating the playerlist
 
         // Get the players and the game data from the server and create the game
@@ -244,10 +244,10 @@ function updateGame() {
     }
     oldfield = data.field; // Setting oldfield to the current field
 
-    // If won is -1 a alert will show the winner
+    // When the game is won (won !== -1) announce the player with the most points
     if (won !== -1) {
         var index = 0;
-        for (var i = 1; i < points.length; i++) { if (points[i] > points[i - 1]) index = i; }
+        for (var i = 1; i < points.length; i++) { if (points[i] > points[index]) index = i; }
         clearInterval(interval);
         alert(players[index] + " won");
     }
