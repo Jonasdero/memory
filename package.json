@@ -4,7 +4,9 @@
   "description": "Memory with NodeJS and jQuery",
   "main": "src/server/server.js",
   "dependencies": {
-    "express": "^5.1.0"
+    "bootstrap": "^5.3.3",
+    "express": "^5.1.0",
+    "jquery": "^3.7.1"
   },
   "devDependencies": {
     "@types/express": "^5.0.0",
