@@ -1,10 +1,19 @@
+# Dependabot config — minor+patch grouped into one PR per ecosystem.
+# Major updates stay separate (manual review via auto-merge skip).
 version: 2
 updates:
-  - package-ecosystem: "npm"
-    directory: "/"
-    schedule:
-      interval: "weekly"
-    labels:
-      - "dependencies"
-    assignees:
-      - "Jonasdero"
+- package-ecosystem: npm
+  directory: /
+  schedule:
+    interval: weekly
+  labels:
+  - dependencies
+  assignees:
+  - Jonasdero
+  groups:
+    minor-and-patch:
+      patterns:
+      - '*'
+      update-types:
+      - minor
+      - patch
