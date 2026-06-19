@@ -4,13 +4,13 @@
   "description": "Memory with NodeJS and jQuery",
   "main": "src/server/server.js",
   "dependencies": {
-    "bootstrap": "^5.3.3",
+    "bootstrap": "^5.3.8",
     "express": "^5.1.0",
     "jquery": "^4.0.0"
   },
   "devDependencies": {
     "@types/express": "^5.0.0",
-    "@types/node": "^25.9.1",
+    "@types/node": "^25.9.2",
     "typescript": "^6.0.3"
   },
   "scripts": {
