@@ -1,19 +1,16 @@
-# Dependabot config — minor+patch grouped into one PR per ecosystem.
-# Major updates stay separate (manual review via auto-merge skip).
+# Dependabot config — all updates grouped into one PR per ecosystem, monthly.
 version: 2
 updates:
 - package-ecosystem: npm
   directory: /
   schedule:
-    interval: weekly
+    interval: monthly
+  open-pull-requests-limit: 5
   labels:
   - dependencies
   assignees:
   - Jonasdero
   groups:
-    minor-and-patch:
+    all-dependencies:
       patterns:
       - '*'
-      update-types:
-      - minor
-      - patch
